@@ -61,10 +61,6 @@
             {{ tournament.title }}
           </h1>
 
-          <p class="text-sm md:text-lg text-gray-600 mb-4 md:mb-6">
-            {{ tournament.description }}
-          </p>
-
           <!-- Stats Grid - Mobile Optimized -->
           <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
             <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl md:rounded-2xl p-3 md:p-4 text-center border border-purple-200">
@@ -148,11 +144,14 @@
         <!-- Tab Content -->
         <div class="p-4 md:p-6">
           <!-- Rules Tab -->
+          <div v-if="activeTab === 'description'">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">توضیحات تورنومنت</h3>
+            <div class="prose max-w-none text-gray-700" v-html="tournament.description || 'قوانین هنوز تعیین نشده است.'"></div>
+          </div>
           <div v-if="activeTab === 'rules'">
             <h3 class="text-2xl font-bold text-gray-800 mb-4">قوانین تورنومنت</h3>
             <div class="prose max-w-none text-gray-700" v-html="tournament.rules || 'قوانین هنوز تعیین نشده است.'"></div>
           </div>
-
           <!-- Participants Tab -->
           <div v-else-if="activeTab === 'participants'">
             <h3 class="text-2xl font-bold text-gray-800 mb-4">
@@ -360,7 +359,8 @@ const loadingRankings = ref(false)
 const joiningTournament = ref(false)
 
 const tabs = [
-  { id: 'rules', label: 'قوانین', icon: '📋' },
+  { id: 'description', label: 'توضیحات', icon: '📋' },
+  { id: 'rules', label: 'قوانین', icon: '⚖️' },
   { id: 'participants', label: 'شرکت‌کنندگان', icon: '👥' },
   { id: 'rankings', label: 'رنکینگ', icon: '🏆' },
   { id: 'chat', label: 'چت', icon: '💬' }
