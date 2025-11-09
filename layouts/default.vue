@@ -10,6 +10,10 @@
 
     <!-- Main Content -->
     <div v-else>
+      <!-- Navbar -->
+      <Navbar />
+
+      <!-- Page Content -->
       <slot />
     </div>
   </div>
