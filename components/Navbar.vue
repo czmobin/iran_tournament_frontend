@@ -39,6 +39,9 @@
               💰 کیف پول
             </NuxtLink>
 
+            <!-- Notification Bell -->
+            <NotificationDropdown />
+
             <div class="relative" ref="profileMenuRef">
               <button
                 @click="toggleProfileMenu"
@@ -136,6 +139,20 @@
           </NuxtLink>
 
           <NuxtLink
+            to="/notifications"
+            @click="showMobileMenu = false"
+            class="block text-white hover:bg-white/20 px-4 py-3 rounded-lg transition font-bold relative"
+          >
+            🔔 اعلان‌ها
+            <span
+              v-if="notificationStore.unreadCount > 0"
+              class="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
+            >
+              {{ notificationStore.unreadCount > 9 ? '9+' : notificationStore.unreadCount }}
+            </span>
+          </NuxtLink>
+
+          <NuxtLink
             to="/profile"
             @click="showMobileMenu = false"
             class="block text-white hover:bg-white/20 px-4 py-3 rounded-lg transition font-bold"
@@ -174,6 +191,7 @@
 
 <script setup lang="ts">
 const authStore = useAuthStore()
+const notificationStore = useNotificationsStore()
 const router = useRouter()
 
 const showMobileMenu = ref(false)

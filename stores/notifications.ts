@@ -12,12 +12,31 @@ export interface Notification {
   link?: string
 }
 
+export interface NotificationPreference {
+  id: number
+  user: number
+  email_enabled: boolean
+  sms_enabled: boolean
+  push_enabled: boolean
+  tournament_start: boolean
+  tournament_registration: boolean
+  match_reminder: boolean
+  prize_distribution: boolean
+  withdrawal_completion: boolean
+  ranking_update: boolean
+  created_at: string
+  updated_at: string
+}
+
 export const useNotificationsStore = defineStore('notifications', {
   state: () => ({
     notifications: [] as Notification[],
     unreadCount: 0,
     isLoading: false,
     error: null as string | null,
+    preferences: null as NotificationPreference | null,
+    isLoadingPreferences: false,
+    preferencesError: null as string | null,
   }),
 
   getters: {
@@ -112,6 +131,53 @@ export const useNotificationsStore = defineStore('notifications', {
     // پاک کردن خطا
     clearError() {
       this.error = null
+    },
+
+    // دریافت تنظیمات اعلان‌ها
+    async fetchPreferences() {
+      try {
+        this.isLoadingPreferences = true
+        this.preferencesError = null
+        const { apiFetch } = useApi()
+
+        const response = await apiFetch('/notifications/preferences/')
+        this.preferences = response
+
+        return { success: true }
+      } catch (error: any) {
+        this.preferencesError = error.data?.message || 'خطا در دریافت تنظیمات'
+        return { success: false, message: this.preferencesError }
+      } finally {
+        this.isLoadingPreferences = false
+      }
+    },
+
+    // به‌روزرسانی تنظیمات اعلان‌ها
+    async updatePreferences(preferences: Partial<NotificationPreference>) {
+      try {
+        this.isLoadingPreferences = true
+        this.preferencesError = null
+        const { apiFetch } = useApi()
+
+        const response = await apiFetch('/notifications/preferences/', {
+          method: 'PATCH',
+          body: preferences
+        })
+
+        this.preferences = response
+
+        return { success: true }
+      } catch (error: any) {
+        this.preferencesError = error.data?.message || 'خطا در به‌روزرسانی تنظیمات'
+        return { success: false, message: this.preferencesError }
+      } finally {
+        this.isLoadingPreferences = false
+      }
+    },
+
+    // پاک کردن خطای تنظیمات
+    clearPreferencesError() {
+      this.preferencesError = null
     }
   }
 })
