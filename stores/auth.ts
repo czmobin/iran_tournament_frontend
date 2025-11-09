@@ -35,24 +35,33 @@ export const useAuthStore = defineStore('auth', {
     // Initialize - با کنترل بهتر
     async initialize() {
       if (!process.client) return
-      
+
       this.isInitializing = true
-      
+
       try {
         // بارگذاری از localStorage
         this.loadFromStorage()
-        
+
         // اگه توکن داریم، پروفایل رو fetch کن
         if (this.accessToken) {
           try {
             await this.fetchProfile()
-          } catch (error) {
-            // اگه توکن منقضی شده، پاک کن
-            console.error('Token expired, clearing auth')
-            this.clearStorage()
-            this.accessToken = null
-            this.refreshToken = null
-            this.user = null
+          } catch (error: any) {
+            // فقط در صورت 401 یا 403، توکن رو پاک کن
+            // برای سایر خطاها (مثل network error)، توکن رو نگه دار
+            const errorStatus = error?.status || error?.response?.status
+            const is401or403 = errorStatus === 401 || errorStatus === 403
+
+            if (is401or403) {
+              console.error('Token expired or invalid, clearing auth')
+              this.clearStorage()
+              this.accessToken = null
+              this.refreshToken = null
+              this.user = null
+            } else {
+              // خطای دیگه‌ای بود (مثلاً network) - توکن رو نگه دار
+              console.warn('Failed to fetch profile, but keeping token. Error status:', errorStatus, error)
+            }
           }
         }
       } finally {
@@ -93,20 +102,32 @@ export const useAuthStore = defineStore('auth', {
       try {
         this.isLoading = true
         const { apiFetch } = useApi()
-        
+
+        console.log('[Auth Store] Attempting login for user:', username)
+
         const response = await apiFetch('/auth/login/', {
           method: 'POST',
           body: { username, password }
         })
-        
+
+        console.log('[Auth Store] Login response received:', {
+          hasUser: !!response.user,
+          hasTokens: !!response.tokens,
+          hasAccessToken: !!response.tokens?.access,
+          hasRefreshToken: !!response.tokens?.refresh
+        })
+
         this.user = response.user
         this.accessToken = response.tokens.access
         this.refreshToken = response.tokens.refresh
-        
+
         this.saveToStorage()
-        
+
+        console.log('[Auth Store] Tokens saved to store and localStorage')
+
         return { success: true, message: response.message }
       } catch (error: any) {
+        console.error('[Auth Store] Login failed:', error)
         return {
           success: false,
           message: error.data?.non_field_errors?.[0] || 'خطا در ورود'
@@ -169,8 +190,17 @@ export const useAuthStore = defineStore('auth', {
         this.saveToStorage()
 
         return { success: true }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching profile:', error)
+
+        // ساختار خطا رو اصلاح کن تا initialize بتونه status code رو ببینه
+        if (error.response) {
+          error.response = error.response
+        } else if (error.status) {
+          // برخی موارد که خطا مستقیماً status داره
+          error.response = { status: error.status }
+        }
+
         throw error // ← مهم: throw کن تا initialize بفهمه
       } finally {
         this.isLoading = false
