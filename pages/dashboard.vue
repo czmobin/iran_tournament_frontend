@@ -260,37 +260,73 @@ const user = computed(() => authStore.user)
 
 // Fetch profile on mount
 onMounted(async () => {
-  isLoading.value = true
+  try {
+    isLoading.value = true
 
-  // اگه user نداریم یا داده‌ها قدیمی هستن، از سرور بگیر
-  if (!authStore.user || shouldRefreshData()) {
-    await authStore.fetchProfile()
+    console.log('[Dashboard] Starting mount, has user:', !!authStore.user)
+
+    // فقط اگه user نداریم، fetch کن
+    // چون بعد از login موفق، user قبلاً توی store هست
+    if (!authStore.user) {
+      console.log('[Dashboard] No user found, fetching profile...')
+      await authStore.fetchProfile()
+    } else {
+      console.log('[Dashboard] User already loaded:', authStore.user.username)
+      // داده‌های user رو داریم، فقط wallet balance رو update کن
+      if (authStore.user.wallet_balance === undefined || authStore.user.wallet_balance === null) {
+        console.log('[Dashboard] Refreshing user data for wallet balance...')
+        await authStore.fetchProfile().catch(err => {
+          console.warn('[Dashboard] Failed to refresh profile, using cached data:', err)
+        })
+      }
+    }
+  } catch (error) {
+    console.error('[Dashboard] Error loading profile:', error)
+    // اگه خطا گرفتیم ولی user داریم، ادامه بده
+    // اگه user نداریم، middleware به login redirect میکنه
+  } finally {
+    isLoading.value = false
+    console.log('[Dashboard] Loading complete')
+
+    // بارگذاری تورنومنت‌ها و تراکنش‌ها
+    loadDashboardData()
   }
-
-  isLoading.value = false
-
-  // بارگذاری تورنومنت‌ها و تراکنش‌ها
-  loadDashboardData()
 })
 
 // بارگذاری داده‌های داشبورد
 const loadDashboardData = async () => {
   // بارگذاری تورنومنت‌ها
-  loadingTournaments.value = true
-  await tournamentStore.fetchTournaments()
-  // فیلتر تورنومنت‌هایی که کاربر در اونها شرکت کرده
-  // (این باید از API جداگانه‌ای بیاد، ولی فعلاً همه رو نشون میدیم)
-  myTournaments.value = tournamentStore.tournaments
-  loadingTournaments.value = false
+  try {
+    loadingTournaments.value = true
+    await tournamentStore.fetchTournaments()
+    // فیلتر تورنومنت‌هایی که کاربر در اونها شرکت کرده
+    // (این باید از API جداگانه‌ای بیاد، ولی فعلاً همه رو نشون میدیم)
+    myTournaments.value = tournamentStore.tournaments
+  } catch (error) {
+    console.error('[Dashboard] Error loading tournaments:', error)
+    myTournaments.value = []
+  } finally {
+    loadingTournaments.value = false
+  }
 
   // بارگذاری تراکنش‌ها
-  loadingTransactions.value = true
-  await walletStore.fetchTransactions({ limit: 5 })
-  recentTransactions.value = walletStore.transactions
-  loadingTransactions.value = false
+  try {
+    loadingTransactions.value = true
+    await walletStore.fetchTransactions({ limit: 5 })
+    recentTransactions.value = walletStore.transactions
+  } catch (error) {
+    console.error('[Dashboard] Error loading transactions:', error)
+    recentTransactions.value = []
+  } finally {
+    loadingTransactions.value = false
+  }
 
   // بارگذاری موجودی wallet
-  await walletStore.fetchBalance()
+  try {
+    await walletStore.fetchBalance()
+  } catch (error) {
+    console.error('[Dashboard] Error loading wallet balance:', error)
+  }
 }
 
 // Check if should refresh data (هر 5 دقیقه)

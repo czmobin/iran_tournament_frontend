@@ -161,29 +161,38 @@ onMounted(async () => {
   }
 
   // بارگذاری آمار
-  await loadStats()
+  try {
+    await loadStats()
+  } catch (error) {
+    console.error('[Homepage] Error loading stats:', error)
+  }
 })
 
 const loadStats = async () => {
-  // بارگذاری تورنومنت‌ها برای محاسبه آمار
-  await tournamentStore.fetchTournaments()
+  try {
+    // بارگذاری تورنومنت‌ها برای محاسبه آمار
+    await tournamentStore.fetchTournaments()
 
-  // محاسبه آمار
-  stats.value.tournaments = tournamentStore.tournaments.length
+    // محاسبه آمار
+    stats.value.tournaments = tournamentStore.tournaments.length
 
-  // محاسبه تعداد بازیکنان (مجموع شرکت‌کنندگان در همه تورنومنت‌ها)
-  const totalPlayers = tournamentStore.tournaments.reduce(
-    (sum, t) => sum + t.current_participants,
-    0
-  )
-  stats.value.players = totalPlayers
+    // محاسبه تعداد بازیکنان (مجموع شرکت‌کنندگان در همه تورنومنت‌ها)
+    const totalPlayers = tournamentStore.tournaments.reduce(
+      (sum, t) => sum + t.current_participants,
+      0
+    )
+    stats.value.players = totalPlayers
 
-  // محاسبه جوایز پرداخت شده (مجموع prize pool تورنومنت‌های پایان یافته)
-  const totalPrizes = tournamentStore.tournaments
-    .filter(t => t.status === 'finished')
-    .reduce((sum, t) => sum + t.prize_pool, 0)
+    // محاسبه جوایز پرداخت شده (مجموع prize pool تورنومنت‌های پایان یافته)
+    const totalPrizes = tournamentStore.tournaments
+      .filter(t => t.status === 'finished')
+      .reduce((sum, t) => sum + t.prize_pool, 0)
 
-  stats.value.prizes = new Intl.NumberFormat('fa-IR').format(totalPrizes) + ' تومان'
+    stats.value.prizes = new Intl.NumberFormat('fa-IR').format(totalPrizes) + ' تومان'
+  } catch (error) {
+    console.error('[Homepage] Error calculating stats:', error)
+    // در صورت خطا، مقادیر پیش‌فرض رو نگه دار
+  }
 }
 
 useHead({

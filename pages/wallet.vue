@@ -403,8 +403,17 @@ const formatDate = (date: string) => {
 }
 
 const loadTransactions = async () => {
-  await walletStore.fetchBalance()
-  await walletStore.fetchTransactions()
+  try {
+    await walletStore.fetchBalance()
+  } catch (error) {
+    console.error('[Wallet] Error loading balance:', error)
+  }
+
+  try {
+    await walletStore.fetchTransactions()
+  } catch (error) {
+    console.error('[Wallet] Error loading transactions:', error)
+  }
 }
 
 const handleTopUp = async () => {
