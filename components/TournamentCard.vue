@@ -30,9 +30,10 @@
         {{ tournament.title }}
       </h3>
 
-      <p class="text-sm md:text-base text-gray-600 mb-3 md:mb-4 line-clamp-2">
-        {{ tournament.description }}
-      </p>
+      <div
+        v-html="tournament.description"
+        class="text-sm md:text-base text-gray-600 mb-3 md:mb-4 line-clamp-2 prose prose-sm max-w-none"
+      ></div>
 
       <!-- Info -->
       <div class="flex justify-between items-center mb-3 md:mb-4">

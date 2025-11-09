@@ -155,7 +155,10 @@
                 <div class="flex items-center justify-between">
                   <div class="flex-1">
                     <h3 class="font-bold text-gray-800">{{ tournament.title }}</h3>
-                    <p class="text-sm text-gray-500">{{ tournament.description }}</p>
+                    <div
+                      v-html="tournament.description"
+                      class="text-sm text-gray-500 line-clamp-2 prose prose-sm max-w-none"
+                    ></div>
                   </div>
                   <div
                     :class="[

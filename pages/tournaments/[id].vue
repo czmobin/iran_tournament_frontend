@@ -61,9 +61,10 @@
             {{ tournament.title }}
           </h1>
 
-          <p class="text-sm md:text-lg text-gray-600 mb-4 md:mb-6">
-            {{ tournament.description }}
-          </p>
+          <div
+            v-html="tournament.description"
+            class="text-sm md:text-lg text-gray-600 mb-4 md:mb-6 prose prose-sm md:prose-base max-w-none"
+          ></div>
 
           <!-- Stats Grid - Mobile Optimized -->
           <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
