@@ -18,6 +18,7 @@ export const useNotificationsStore = defineStore('notifications', {
     unreadCount: 0,
     isLoading: false,
     error: null as string | null,
+    lastFetch: null as number | null,
   }),
 
   getters: {
@@ -31,6 +32,13 @@ export const useNotificationsStore = defineStore('notifications', {
 
     paymentNotifications: (state) =>
       state.notifications.filter(n => n.notification_type === 'payment'),
+
+    // آیا نیاز به refresh دارد؟ (هر 30 ثانیه)
+    shouldRefresh: (state) => {
+      if (!state.lastFetch) return true
+      const thirtySeconds = 30 * 1000
+      return Date.now() - state.lastFetch > thirtySeconds
+    }
   },
 
   actions: {
@@ -51,18 +59,37 @@ export const useNotificationsStore = defineStore('notifications', {
           url += `?${params.toString()}`
         }
 
+        console.log('[Notifications] Fetching from:', url)
+
         const response = await apiFetch(url)
         this.notifications = response.results || response
+        this.lastFetch = Date.now()
 
         // محاسبه تعداد اعلان‌های خوانده نشده
         this.unreadCount = this.notifications.filter(n => !n.is_read).length
 
+        console.log('[Notifications] Loaded:', this.notifications.length, 'Unread:', this.unreadCount)
+
         return { success: true }
       } catch (error: any) {
+        console.error('[Notifications] Error fetching:', error)
         this.error = error.data?.message || 'خطا در دریافت اعلان‌ها'
         return { success: false, message: this.error }
       } finally {
         this.isLoading = false
+      }
+    },
+
+    // دریافت تعداد اعلان‌های خوانده نشده
+    async fetchUnreadCount() {
+      try {
+        const { apiFetch } = useApi()
+        const response = await apiFetch('/notifications/unread-count/')
+        this.unreadCount = response.count || 0
+        return { success: true, count: this.unreadCount }
+      } catch (error: any) {
+        console.error('[Notifications] Error fetching unread count:', error)
+        return { success: false }
       }
     },
 
@@ -78,13 +105,16 @@ export const useNotificationsStore = defineStore('notifications', {
 
         // به‌روزرسانی در لیست محلی
         const notification = this.notifications.find(n => n.id === notificationId)
-        if (notification) {
+        if (notification && !notification.is_read) {
           notification.is_read = true
           this.unreadCount = Math.max(0, this.unreadCount - 1)
         }
 
+        console.log('[Notifications] Marked as read:', notificationId)
+
         return { success: true }
       } catch (error: any) {
+        console.error('[Notifications] Error marking as read:', error)
         this.error = error.data?.message || 'خطا در علامت‌گذاری اعلان'
         return { success: false, message: this.error }
       }
@@ -94,17 +124,63 @@ export const useNotificationsStore = defineStore('notifications', {
     async markAllAsRead() {
       try {
         this.error = null
+        const { apiFetch } = useApi()
 
-        // علامت‌گذاری همه اعلان‌های خوانده نشده
-        const unreadIds = this.unreadNotifications.map(n => n.id)
+        // سعی کن endpoint مخصوص mark all as read رو صدا بزن
+        try {
+          await apiFetch('/notifications/mark-all-read/', {
+            method: 'PUT'
+          })
+        } catch (error) {
+          // اگه endpoint وجود نداشت، یکی یکی mark کن
+          const unreadIds = this.unreadNotifications.map(n => n.id)
+          await Promise.all(
+            unreadIds.map(id => this.markAsRead(id))
+          )
+        }
 
-        await Promise.all(
-          unreadIds.map(id => this.markAsRead(id))
-        )
+        // به‌روزرسانی همه اعلان‌ها در لیست محلی
+        this.notifications.forEach(n => {
+          n.is_read = true
+        })
+        this.unreadCount = 0
+
+        console.log('[Notifications] Marked all as read')
 
         return { success: true }
       } catch (error: any) {
+        console.error('[Notifications] Error marking all as read:', error)
         this.error = error.data?.message || 'خطا در علامت‌گذاری اعلان‌ها'
+        return { success: false, message: this.error }
+      }
+    },
+
+    // حذف یک اعلان
+    async deleteNotification(notificationId: number) {
+      try {
+        this.error = null
+        const { apiFetch } = useApi()
+
+        await apiFetch(`/notifications/${notificationId}/`, {
+          method: 'DELETE'
+        })
+
+        // حذف از لیست محلی
+        const index = this.notifications.findIndex(n => n.id === notificationId)
+        if (index !== -1) {
+          const wasUnread = !this.notifications[index].is_read
+          this.notifications.splice(index, 1)
+          if (wasUnread) {
+            this.unreadCount = Math.max(0, this.unreadCount - 1)
+          }
+        }
+
+        console.log('[Notifications] Deleted:', notificationId)
+
+        return { success: true }
+      } catch (error: any) {
+        console.error('[Notifications] Error deleting:', error)
+        this.error = error.data?.message || 'خطا در حذف اعلان'
         return { success: false, message: this.error }
       }
     },
@@ -112,6 +188,15 @@ export const useNotificationsStore = defineStore('notifications', {
     // پاک کردن خطا
     clearError() {
       this.error = null
+    },
+
+    // reset store
+    reset() {
+      this.notifications = []
+      this.unreadCount = 0
+      this.isLoading = false
+      this.error = null
+      this.lastFetch = null
     }
   }
 })
