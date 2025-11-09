@@ -209,104 +209,106 @@
               <p>هنوز رنکینگی ثبت نشده است</p>
             </div>
 
-            <!-- Mobile: Card Layout -->
-            <div v-else class="block md:hidden space-y-3">
-              <div
-                v-for="(ranking, index) in rankings"
-                :key="ranking.id"
-                :class="[
-                  'rounded-xl p-4 border-2',
-                  index === 0 ? 'bg-gradient-to-r from-yellow-50 to-yellow-100 border-yellow-300' :
-                  index === 1 ? 'bg-gradient-to-r from-gray-50 to-gray-100 border-gray-300' :
-                  index === 2 ? 'bg-gradient-to-r from-orange-50 to-orange-100 border-orange-300' :
-                  'bg-white border-gray-200'
-                ]"
-              >
-                <div class="flex items-center justify-between mb-3">
-                  <div class="flex items-center gap-3">
-                    <div class="text-3xl">
-                      <span v-if="index === 0">🥇</span>
-                      <span v-else-if="index === 1">🥈</span>
-                      <span v-else-if="index === 2">🥉</span>
-                      <span v-else class="text-xl font-bold text-gray-600">#{{ ranking.rank }}</span>
-                    </div>
-                    <div>
-                      <div class="font-bold text-gray-800">
-                        {{ ranking.user.first_name }} {{ ranking.user.last_name }}
+            <div v-else>
+              <!-- Mobile: Card Layout -->
+              <div class="block md:hidden space-y-3">
+                <div
+                  v-for="(ranking, index) in rankings"
+                  :key="ranking.id"
+                  :class="[
+                    'rounded-xl p-4 border-2',
+                    index === 0 ? 'bg-gradient-to-r from-yellow-50 to-yellow-100 border-yellow-300' :
+                    index === 1 ? 'bg-gradient-to-r from-gray-50 to-gray-100 border-gray-300' :
+                    index === 2 ? 'bg-gradient-to-r from-orange-50 to-orange-100 border-orange-300' :
+                    'bg-white border-gray-200'
+                  ]"
+                >
+                  <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-3">
+                      <div class="text-3xl">
+                        <span v-if="index === 0">🥇</span>
+                        <span v-else-if="index === 1">🥈</span>
+                        <span v-else-if="index === 2">🥉</span>
+                        <span v-else class="text-xl font-bold text-gray-600">#{{ ranking.rank }}</span>
                       </div>
-                      <div class="text-sm text-gray-500">@{{ ranking.user.username }}</div>
+                      <div>
+                        <div class="font-bold text-gray-800">
+                          {{ ranking.user.first_name }} {{ ranking.user.last_name }}
+                        </div>
+                        <div class="text-sm text-gray-500">@{{ ranking.user.username }}</div>
+                      </div>
+                    </div>
+                    <div class="text-2xl font-black text-blue-600">
+                      {{ ranking.score }}
                     </div>
                   </div>
-                  <div class="text-2xl font-black text-blue-600">
-                    {{ ranking.score }}
-                  </div>
-                </div>
 
-                <div class="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-gray-200">
-                  <div class="text-center">
-                    <div class="text-lg font-bold text-green-600">{{ ranking.wins }}</div>
-                    <div class="text-xs text-gray-500">برد</div>
+                  <div class="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-gray-200">
+                    <div class="text-center">
+                      <div class="text-lg font-bold text-green-600">{{ ranking.wins }}</div>
+                      <div class="text-xs text-gray-500">برد</div>
+                    </div>
+                    <div class="text-center">
+                      <div class="text-lg font-bold text-red-600">{{ ranking.losses }}</div>
+                      <div class="text-xs text-gray-500">باخت</div>
+                    </div>
+                    <div class="text-center">
+                      <div class="text-lg font-bold text-gray-600">{{ ranking.draws }}</div>
+                      <div class="text-xs text-gray-500">مساوی</div>
+                    </div>
                   </div>
-                  <div class="text-center">
-                    <div class="text-lg font-bold text-red-600">{{ ranking.losses }}</div>
-                    <div class="text-xs text-gray-500">باخت</div>
-                  </div>
-                  <div class="text-center">
-                    <div class="text-lg font-bold text-gray-600">{{ ranking.draws }}</div>
-                    <div class="text-xs text-gray-500">مساوی</div>
-                  </div>
-                </div>
 
-                <div class="mt-2 text-center text-sm text-purple-600 font-bold">
-                  👑 تاج‌ها: {{ ranking.crowns_earned }} - {{ ranking.crowns_lost }}
+                  <div class="mt-2 text-center text-sm text-purple-600 font-bold">
+                    👑 تاج‌ها: {{ ranking.crowns_earned }} - {{ ranking.crowns_lost }}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <!-- Desktop: Table Layout -->
-            <div v-else class="hidden md:block overflow-x-auto">
-              <table class="w-full">
-                <thead>
-                  <tr class="bg-gradient-to-r from-purple-100 to-pink-100 text-gray-700">
-                    <th class="px-4 py-3 text-right">رنک</th>
-                    <th class="px-4 py-3 text-right">بازیکن</th>
-                    <th class="px-4 py-3 text-center">برد</th>
-                    <th class="px-4 py-3 text-center">باخت</th>
-                    <th class="px-4 py-3 text-center">مساوی</th>
-                    <th class="px-4 py-3 text-center">تاج‌ها</th>
-                    <th class="px-4 py-3 text-center">امتیاز</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    v-for="(ranking, index) in rankings"
-                    :key="ranking.id"
-                    :class="[
-                      index % 2 === 0 ? 'bg-white' : 'bg-gray-50',
-                      index === 0 ? 'bg-yellow-50' : ''
-                    ]"
-                  >
-                    <td class="px-4 py-3 font-bold">
-                      <span v-if="index === 0" class="text-2xl">🥇</span>
-                      <span v-else-if="index === 1" class="text-2xl">🥈</span>
-                      <span v-else-if="index === 2" class="text-2xl">🥉</span>
-                      <span v-else>{{ ranking.rank }}</span>
-                    </td>
-                    <td class="px-4 py-3 font-bold text-gray-800">
-                      {{ ranking.user.first_name }} {{ ranking.user.last_name }}
-                    </td>
-                    <td class="px-4 py-3 text-center text-green-600 font-bold">{{ ranking.wins }}</td>
-                    <td class="px-4 py-3 text-center text-red-600 font-bold">{{ ranking.losses }}</td>
-                    <td class="px-4 py-3 text-center text-gray-600 font-bold">{{ ranking.draws }}</td>
-                    <td class="px-4 py-3 text-center text-purple-600 font-bold">
-                      {{ ranking.crowns_earned }} - {{ ranking.crowns_lost }}
-                    </td>
-                    <td class="px-4 py-3 text-center text-blue-600 font-bold text-lg">
-                      {{ ranking.score }}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+              <!-- Desktop: Table Layout -->
+              <div class="hidden md:block overflow-x-auto">
+                <table class="w-full">
+                  <thead>
+                    <tr class="bg-gradient-to-r from-purple-100 to-pink-100 text-gray-700">
+                      <th class="px-4 py-3 text-right">رنک</th>
+                      <th class="px-4 py-3 text-right">بازیکن</th>
+                      <th class="px-4 py-3 text-center">برد</th>
+                      <th class="px-4 py-3 text-center">باخت</th>
+                      <th class="px-4 py-3 text-center">مساوی</th>
+                      <th class="px-4 py-3 text-center">تاج‌ها</th>
+                      <th class="px-4 py-3 text-center">امتیاز</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="(ranking, index) in rankings"
+                      :key="ranking.id"
+                      :class="[
+                        index % 2 === 0 ? 'bg-white' : 'bg-gray-50',
+                        index === 0 ? 'bg-yellow-50' : ''
+                      ]"
+                    >
+                      <td class="px-4 py-3 font-bold">
+                        <span v-if="index === 0" class="text-2xl">🥇</span>
+                        <span v-else-if="index === 1" class="text-2xl">🥈</span>
+                        <span v-else-if="index === 2" class="text-2xl">🥉</span>
+                        <span v-else>{{ ranking.rank }}</span>
+                      </td>
+                      <td class="px-4 py-3 font-bold text-gray-800">
+                        {{ ranking.user.first_name }} {{ ranking.user.last_name }}
+                      </td>
+                      <td class="px-4 py-3 text-center text-green-600 font-bold">{{ ranking.wins }}</td>
+                      <td class="px-4 py-3 text-center text-red-600 font-bold">{{ ranking.losses }}</td>
+                      <td class="px-4 py-3 text-center text-gray-600 font-bold">{{ ranking.draws }}</td>
+                      <td class="px-4 py-3 text-center text-purple-600 font-bold">
+                        {{ ranking.crowns_earned }} - {{ ranking.crowns_lost }}
+                      </td>
+                      <td class="px-4 py-3 text-center text-blue-600 font-bold text-lg">
+                        {{ ranking.score }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
 
