@@ -137,22 +137,33 @@ const formatDate = (date: string) => {
   return new Date(date).toLocaleDateString('fa-IR')
 }
 
-const goToDetails = async (event?: MouseEvent) => {
+const router = useRouter()
+
+const goToDetails = (event?: MouseEvent) => {
   console.log('🎯 Click detected!', event)
 
   try {
+    // جلوگیری از رفتار پیش‌فرض
+    if (event) {
+      event.preventDefault()
+      event.stopPropagation()
+    }
+
     // استفاده از slug برای SEO، اگر موجود نبود از ID استفاده می‌کنیم
     const identifier = props.tournament.slug || props.tournament.id
     const url = `/tournaments/${identifier}`
     console.log('🔄 Navigating to:', url, 'Identifier:', identifier, 'Tournament:', props.tournament)
 
-    // در Nuxt 3 باید از navigateTo استفاده کنیم نه router.push
-    const result = await navigateTo(url)
-    console.log('✅ Navigation result:', result)
+    // در Nuxt 4 از router.push استفاده می‌کنیم
+    router.push(url).then(() => {
+      console.log('✅ Navigation successful')
+    }).catch((error) => {
+      console.error('❌ Navigation error:', error)
+      alert('خطا در باز کردن صفحه: ' + error.message)
+    })
   } catch (error) {
-    console.error('❌ Navigation error:', error)
-    // نمایش خطا به کاربر
-    alert('خطا در باز کردن صفحه: ' + (error as Error).message)
+    console.error('❌ Unexpected error:', error)
+    alert('خطای غیرمنتظره: ' + (error as Error).message)
   }
 }
 </script>
