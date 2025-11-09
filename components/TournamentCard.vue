@@ -1,7 +1,7 @@
 <template>
-  <NuxtLink
-    :to="`/tournaments/${tournament.slug || tournament.id}`"
-    class="block bg-white rounded-xl md:rounded-2xl shadow-lg md:shadow-xl overflow-hidden hover:shadow-2xl transition transform hover:-translate-y-1 md:hover:-translate-y-2"
+  <div
+    @click="goToDetails"
+    class="block bg-white rounded-xl md:rounded-2xl shadow-lg md:shadow-xl overflow-hidden hover:shadow-2xl transition transform hover:-translate-y-1 md:hover:-translate-y-2 cursor-pointer active:scale-95"
   >
     <!-- Banner -->
     <div class="h-32 md:h-40 bg-gradient-to-r from-purple-500 to-pink-500 relative">
@@ -91,7 +91,7 @@
         مشاهده جزئیات
       </div>
     </div>
-  </NuxtLink>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -135,5 +135,12 @@ const formatPrice = (price: number) => {
 
 const formatDate = (date: string) => {
   return new Date(date).toLocaleDateString('fa-IR')
+}
+
+const goToDetails = () => {
+  const router = useRouter()
+  const url = `/tournaments/${props.tournament.slug || props.tournament.id}`
+  console.log('Navigating to:', url)
+  router.push(url)
 }
 </script>
