@@ -131,20 +131,48 @@
 </template>
 
 <script setup lang="ts">
+import { useTournamentStore } from '~/stores/tournament'
+
 const authStore = useAuthStore()
+const tournamentStore = useTournamentStore()
 const mobileMenuOpen = ref(false)
 
 const stats = ref({
-  tournaments: 150,
-  players: 1250,
-  prizes: '50M تومان'
+  tournaments: 0,
+  players: 0,
+  prizes: '0 تومان'
 })
 
-onMounted(() => {
+onMounted(async () => {
   if (process.client) {
     authStore.loadFromStorage()
   }
+
+  // بارگذاری آمار
+  await loadStats()
 })
+
+const loadStats = async () => {
+  // بارگذاری تورنومنت‌ها برای محاسبه آمار
+  await tournamentStore.fetchTournaments()
+
+  // محاسبه آمار
+  stats.value.tournaments = tournamentStore.tournaments.length
+
+  // محاسبه تعداد بازیکنان (مجموع شرکت‌کنندگان در همه تورنومنت‌ها)
+  const totalPlayers = tournamentStore.tournaments.reduce(
+    (sum, t) => sum + t.current_participants,
+    0
+  )
+  stats.value.players = totalPlayers
+
+  // محاسبه جوایز پرداخت شده (مجموع prize pool تورنومنت‌های پایان یافته)
+  const totalPrizes = tournamentStore.tournaments
+    .filter(t => t.status === 'finished')
+    .reduce((sum, t) => sum + t.prize_pool, 0)
+
+  stats.value.prizes = new Intl.NumberFormat('fa-IR').format(totalPrizes) + ' تومان'
+}
 
 useHead({
   title: 'ایران تورنومنت - تورنومنت‌های آنلاین کلش رویال',

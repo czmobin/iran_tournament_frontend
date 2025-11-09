@@ -92,8 +92,8 @@
         </div>
 
         <!-- Quick Actions -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <NuxtLink 
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <NuxtLink
             to="/tournaments"
             class="bg-purple-500 hover:bg-purple-600 text-white p-6 rounded-2xl shadow-lg transition transform hover:scale-105"
           >
@@ -102,7 +102,7 @@
             <p class="text-white/80">مشاهده و شرکت در تورنومنت‌ها</p>
           </NuxtLink>
 
-          <NuxtLink 
+          <NuxtLink
             to="/wallet"
             class="bg-green-500 hover:bg-green-600 text-white p-6 rounded-2xl shadow-lg transition transform hover:scale-105"
           >
@@ -111,7 +111,7 @@
             <p class="text-white/80">مدیریت موجودی و تراکنش‌ها</p>
           </NuxtLink>
 
-          <NuxtLink 
+          <NuxtLink
             to="/profile"
             class="bg-blue-500 hover:bg-blue-600 text-white p-6 rounded-2xl shadow-lg transition transform hover:scale-105"
           >
@@ -120,22 +120,140 @@
             <p class="text-white/80">ویرایش اطلاعات کاربری</p>
           </NuxtLink>
         </div>
+
+        <!-- Recent Tournaments -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-gray-800">تورنومنت‌های من</h2>
+            <NuxtLink to="/tournaments" class="text-purple-600 hover:text-purple-700 text-sm font-bold">
+              مشاهده همه →
+            </NuxtLink>
+          </div>
+
+          <div v-if="loadingTournaments" class="flex justify-center py-8">
+            <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-purple-600"></div>
+          </div>
+
+          <div v-else-if="myTournaments.length === 0" class="text-center py-8 text-gray-500">
+            <div class="text-6xl mb-4">🏆</div>
+            <p>شما هنوز در هیچ تورنومنتی شرکت نکرده‌اید</p>
+            <NuxtLink
+              to="/tournaments"
+              class="inline-block mt-4 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+            >
+              مشاهده تورنومنت‌ها
+            </NuxtLink>
+          </div>
+
+          <div v-else class="space-y-3">
+            <div
+              v-for="tournament in myTournaments.slice(0, 3)"
+              :key="tournament.id"
+              class="bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition"
+            >
+              <NuxtLink :to="`/tournaments/${tournament.slug || tournament.id}`" class="block">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <h3 class="font-bold text-gray-800">{{ tournament.title }}</h3>
+                    <p class="text-sm text-gray-500">{{ tournament.description }}</p>
+                  </div>
+                  <div
+                    :class="[
+                      'px-3 py-1 rounded-full text-xs font-bold',
+                      tournament.status === 'registration' ? 'bg-green-100 text-green-600' :
+                      tournament.status === 'ongoing' ? 'bg-yellow-100 text-yellow-600' :
+                      'bg-red-100 text-red-600'
+                    ]"
+                  >
+                    {{ getStatusLabel(tournament.status) }}
+                  </div>
+                </div>
+              </NuxtLink>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="bg-white rounded-2xl shadow-lg p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-gray-800">آخرین تراکنش‌ها</h2>
+            <NuxtLink to="/wallet" class="text-purple-600 hover:text-purple-700 text-sm font-bold">
+              مشاهده همه →
+            </NuxtLink>
+          </div>
+
+          <div v-if="loadingTransactions" class="flex justify-center py-8">
+            <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-purple-600"></div>
+          </div>
+
+          <div v-else-if="recentTransactions.length === 0" class="text-center py-8 text-gray-500">
+            <div class="text-6xl mb-4">💰</div>
+            <p>هنوز تراکنشی ثبت نشده است</p>
+          </div>
+
+          <div v-else class="space-y-3">
+            <div
+              v-for="transaction in recentTransactions"
+              :key="transaction.id"
+              class="bg-gray-50 rounded-xl p-4 flex items-center justify-between"
+            >
+              <div class="flex items-center gap-3">
+                <div
+                  :class="[
+                    'w-10 h-10 rounded-full flex items-center justify-center',
+                    getTransactionColor(transaction.transaction_type)
+                  ]"
+                >
+                  {{ getTransactionIcon(transaction.transaction_type) }}
+                </div>
+                <div>
+                  <div class="font-bold text-gray-800">
+                    {{ getTransactionLabel(transaction.transaction_type) }}
+                  </div>
+                  <div class="text-xs text-gray-500">
+                    {{ formatDate(transaction.created_at) }}
+                  </div>
+                </div>
+              </div>
+              <div
+                :class="[
+                  'text-lg font-bold',
+                  transaction.transaction_type === 'deposit' || transaction.transaction_type === 'prize' || transaction.transaction_type === 'refund'
+                    ? 'text-green-600'
+                    : 'text-red-600'
+                ]"
+              >
+                {{ transaction.transaction_type === 'withdrawal' || transaction.transaction_type === 'tournament_fee' ? '-' : '+' }}
+                {{ formatPrice(transaction.amount) }}
+              </div>
+            </div>
+          </div>
+        </div>
       </main>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { useTournamentStore } from '~/stores/tournament'
+import { useWalletStore } from '~/stores/wallet'
+
 definePageMeta({
   middleware: 'auth'
 })
 
 const authStore = useAuthStore()
+const tournamentStore = useTournamentStore()
+const walletStore = useWalletStore()
 const router = useRouter()
 
 // State
 const isLoading = ref(true)
 const refreshing = ref(false)
+const loadingTournaments = ref(false)
+const loadingTransactions = ref(false)
+const myTournaments = ref<any[]>([])
+const recentTransactions = ref<any[]>([])
 
 // Get user data
 const user = computed(() => authStore.user)
@@ -143,21 +261,44 @@ const user = computed(() => authStore.user)
 // Fetch profile on mount
 onMounted(async () => {
   isLoading.value = true
-  
+
   // اگه user نداریم یا داده‌ها قدیمی هستن، از سرور بگیر
   if (!authStore.user || shouldRefreshData()) {
     await authStore.fetchProfile()
   }
-  
+
   isLoading.value = false
+
+  // بارگذاری تورنومنت‌ها و تراکنش‌ها
+  loadDashboardData()
 })
+
+// بارگذاری داده‌های داشبورد
+const loadDashboardData = async () => {
+  // بارگذاری تورنومنت‌ها
+  loadingTournaments.value = true
+  await tournamentStore.fetchTournaments()
+  // فیلتر تورنومنت‌هایی که کاربر در اونها شرکت کرده
+  // (این باید از API جداگانه‌ای بیاد، ولی فعلاً همه رو نشون میدیم)
+  myTournaments.value = tournamentStore.tournaments
+  loadingTournaments.value = false
+
+  // بارگذاری تراکنش‌ها
+  loadingTransactions.value = true
+  await walletStore.fetchTransactions({ limit: 5 })
+  recentTransactions.value = walletStore.transactions
+  loadingTransactions.value = false
+
+  // بارگذاری موجودی wallet
+  await walletStore.fetchBalance()
+}
 
 // Check if should refresh data (هر 5 دقیقه)
 const shouldRefreshData = () => {
   if (process.client) {
     const lastFetch = localStorage.getItem('lastProfileFetch')
     if (!lastFetch) return true
-    
+
     const fiveMinutes = 5 * 60 * 1000
     return Date.now() - parseInt(lastFetch) > fiveMinutes
   }
@@ -168,11 +309,12 @@ const shouldRefreshData = () => {
 const refreshProfile = async () => {
   refreshing.value = true
   await authStore.fetchProfile()
-  
+  await loadDashboardData()
+
   if (process.client) {
     localStorage.setItem('lastProfileFetch', Date.now().toString())
   }
-  
+
   refreshing.value = false
 }
 
@@ -186,6 +328,62 @@ const handleLogout = async () => {
 // Format price
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat('fa-IR').format(price) + ' تومان'
+}
+
+// Format date
+const formatDate = (date: string) => {
+  return new Date(date).toLocaleDateString('fa-IR', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  })
+}
+
+// Get status label
+const getStatusLabel = (status: string) => {
+  const labels: Record<string, string> = {
+    draft: 'پیش‌نویس',
+    registration: 'ثبت‌نام',
+    ongoing: 'در حال برگزاری',
+    finished: 'پایان یافته'
+  }
+  return labels[status] || status
+}
+
+// Get transaction label
+const getTransactionLabel = (type: string) => {
+  const labels: Record<string, string> = {
+    deposit: 'واریز',
+    withdrawal: 'برداشت',
+    tournament_fee: 'شرکت در تورنومنت',
+    prize: 'جایزه',
+    refund: 'بازگشت وجه'
+  }
+  return labels[type] || type
+}
+
+// Get transaction icon
+const getTransactionIcon = (type: string) => {
+  const icons: Record<string, string> = {
+    deposit: '💰',
+    withdrawal: '💸',
+    tournament_fee: '🎮',
+    prize: '🏆',
+    refund: '↩️'
+  }
+  return icons[type] || '📝'
+}
+
+// Get transaction color
+const getTransactionColor = (type: string) => {
+  const colors: Record<string, string> = {
+    deposit: 'bg-green-100 text-green-600',
+    withdrawal: 'bg-red-100 text-red-600',
+    tournament_fee: 'bg-purple-100 text-purple-600',
+    prize: 'bg-yellow-100 text-yellow-600',
+    refund: 'bg-blue-100 text-blue-600'
+  }
+  return colors[type] || 'bg-gray-100 text-gray-600'
 }
 
 // SEO
