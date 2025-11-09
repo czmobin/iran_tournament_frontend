@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* فونت فارسی */
+@font-face {
+  font-family: 'Vazirmatn';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn[wght].woff2') format('woff2-variations');
+}
+
+@layer base {
+  * {
+    @apply border-gray-200;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+    /* Prevent layout shift */
+    overflow-x: hidden;
+  }
+  
+  body {
+    @apply font-sans bg-gray-50 text-gray-900;
+    font-family: 'Vazirmatn', sans-serif;
+    direction: rtl;
+    /* Prevent FOUC */
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Initial load - hide until styled */
+  html.initial-load body {
+    opacity: 0;
+    animation: fadeIn 0.2s ease-in forwards;
+  }
+  
+  @keyframes fadeIn {
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+/* Page transitions */
+.page-enter-active,
+.page-leave-active {
+  transition: all 0.3s ease;
+}
+
+.page-enter-from {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+.page-leave-to {
+  opacity: 0;
+  transform: scale(1.05);
+}
+
+/* Loading animation */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  /* Prevent zoom on input focus */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+  
+  /* Better tap targets */
+  button,
+  a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Fix iOS Safari issues */
+@supports (-webkit-touch-callout: none) {
+  body {
+    /* Fix 100vh issue on iOS */
+    min-height: -webkit-fill-available;
+  }
+}

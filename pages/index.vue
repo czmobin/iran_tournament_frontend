@@ -1,0 +1,156 @@
+<template>
+  <div class="min-h-screen bg-gradient-to-br from-purple-600 to-blue-600">
+    <!-- Header - Responsive -->
+    <header class="bg-white/10 backdrop-blur-lg border-b border-white/20 sticky top-0 z-50">
+      <div class="container mx-auto px-4 py-3 md:py-4">
+        <div class="flex justify-between items-center">
+          <!-- Logo -->
+          <NuxtLink to="/" class="text-xl md:text-2xl font-bold text-white">
+            🏆 ایران تورنومنت
+          </NuxtLink>
+          
+          <!-- Desktop Menu -->
+          <nav class="hidden md:flex items-center gap-4">
+            <NuxtLink to="/" class="text-white hover:text-yellow-300 transition">
+              خانه
+            </NuxtLink>
+            <NuxtLink to="/tournaments" class="text-white hover:text-yellow-300 transition">
+              تورنومنت‌ها
+            </NuxtLink>
+            
+            <NuxtLink 
+              v-if="authStore.isAuthenticated"
+              to="/dashboard" 
+              class="bg-yellow-400 text-purple-900 px-4 py-2 rounded-lg font-bold hover:bg-yellow-300 transition"
+            >
+              داشبورد
+            </NuxtLink>
+            <NuxtLink 
+              v-else
+              to="/login" 
+              class="bg-yellow-400 text-purple-900 px-4 py-2 rounded-lg font-bold hover:bg-yellow-300 transition"
+            >
+              ورود
+            </NuxtLink>
+          </nav>
+
+          <!-- Mobile Menu Button -->
+          <button 
+            @click="mobileMenuOpen = !mobileMenuOpen"
+            class="md:hidden text-white p-2"
+          >
+            <svg v-if="!mobileMenuOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+            <svg v-else class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div v-if="mobileMenuOpen" class="md:hidden mt-4 pb-4 space-y-3">
+          <NuxtLink 
+            to="/" 
+            class="block text-white hover:text-yellow-300 transition py-2"
+            @click="mobileMenuOpen = false"
+          >
+            خانه
+          </NuxtLink>
+          <NuxtLink 
+            to="/tournaments" 
+            class="block text-white hover:text-yellow-300 transition py-2"
+            @click="mobileMenuOpen = false"
+          >
+            تورنومنت‌ها
+          </NuxtLink>
+          
+          <NuxtLink 
+            v-if="authStore.isAuthenticated"
+            to="/dashboard" 
+            class="block bg-yellow-400 text-purple-900 px-4 py-3 rounded-lg font-bold text-center"
+            @click="mobileMenuOpen = false"
+          >
+            داشبورد
+          </NuxtLink>
+          <NuxtLink 
+            v-else
+            to="/login" 
+            class="block bg-yellow-400 text-purple-900 px-4 py-3 rounded-lg font-bold text-center"
+            @click="mobileMenuOpen = false"
+          >
+            ورود / ثبت‌نام
+          </NuxtLink>
+        </div>
+      </div>
+    </header>
+
+    <!-- Hero Section - Responsive -->
+    <main class="container mx-auto px-4 py-12 md:py-16 lg:py-20 text-center">
+      <h2 class="text-3xl md:text-4xl lg:text-5xl font-black text-white mb-4 md:mb-6 leading-tight">
+        به دنیای تورنومنت کلش رویال خوش آمدید! ⚔️
+      </h2>
+      
+      <p class="text-base md:text-lg lg:text-xl text-white/90 mb-6 md:mb-8 max-w-2xl mx-auto px-4">
+        در تورنومنت‌های آنلاین شرکت کنید، رقابت کنید و جوایز نقدی ببرید!
+      </p>
+
+      <!-- Buttons - Responsive -->
+      <div class="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center px-4">
+        <NuxtLink 
+          to="/tournaments"
+          class="bg-yellow-400 text-purple-900 px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg hover:bg-yellow-300 transition transform hover:scale-105"
+        >
+          شروع کنید 🚀
+        </NuxtLink>
+        
+        <button class="bg-white/20 backdrop-blur text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg hover:bg-white/30 transition border-2 border-white/50">
+          بیشتر بدانید
+        </button>
+      </div>
+
+      <!-- Stats - Responsive Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 mt-12 md:mt-16 lg:mt-20 max-w-4xl mx-auto">
+        <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+          <div class="text-3xl md:text-4xl font-black text-yellow-400 mb-2">{{ stats.tournaments }}</div>
+          <div class="text-white/80 text-sm md:text-base">تورنومنت برگزار شده</div>
+        </div>
+        
+        <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+          <div class="text-3xl md:text-4xl font-black text-yellow-400 mb-2">{{ stats.players }}</div>
+          <div class="text-white/80 text-sm md:text-base">بازیکن فعال</div>
+        </div>
+        
+        <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+          <div class="text-3xl md:text-4xl font-black text-yellow-400 mb-2">{{ stats.prizes }}</div>
+          <div class="text-white/80 text-sm md:text-base">جوایز پرداخت شده</div>
+        </div>
+      </div>
+    </main>
+  </div>
+</template>
+
+<script setup lang="ts">
+const authStore = useAuthStore()
+const mobileMenuOpen = ref(false)
+
+const stats = ref({
+  tournaments: 150,
+  players: 1250,
+  prizes: '50M تومان'
+})
+
+onMounted(() => {
+  if (process.client) {
+    authStore.loadFromStorage()
+  }
+})
+
+useHead({
+  title: 'ایران تورنومنت - تورنومنت‌های آنلاین کلش رویال',
+  meta: [
+    { name: 'description', content: 'بهترین پلتفرم برگزاری تورنومنت‌های کلش رویال در ایران' },
+    { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=5' }
+  ]
+})
+</script>
