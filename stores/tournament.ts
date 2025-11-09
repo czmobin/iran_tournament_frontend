@@ -152,7 +152,8 @@ export const useTournamentStore = defineStore('tournament', {
           ? encodeURIComponent(tournamentId)
           : tournamentId
 
-        const response = await apiFetch(`/tournaments/${encodedId}/join/`, {
+        // بکند از endpoint register استفاده می‌کند نه join
+        const response = await apiFetch(`/tournaments/${encodedId}/register/`, {
           method: 'POST'
         })
 
@@ -208,7 +209,8 @@ export const useTournamentStore = defineStore('tournament', {
           ? encodeURIComponent(tournamentId)
           : tournamentId
 
-        const response = await apiFetch(`/tournaments/${encodedId}/rankings/`)
+        // بکند از endpoint leaderboard استفاده می‌کند نه rankings
+        const response = await apiFetch(`/tournaments/${encodedId}/leaderboard/`)
         this.rankings = response.results || response
 
         return { success: true }
