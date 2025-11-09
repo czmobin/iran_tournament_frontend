@@ -1,60 +1,88 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <div class="container mx-auto px-4 py-12">
-      <h1 class="text-4xl font-black text-gray-800 mb-8">
-        کیف پول 💰
-      </h1>
+  <div class="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50">
+    <!-- Hero Section -->
+    <div class="bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 text-white py-6 md:py-10 px-4 mb-6 md:mb-8 relative overflow-hidden">
+      <!-- Background Pattern -->
+      <div class="absolute inset-0 opacity-10">
+        <div class="absolute top-0 right-0 w-48 h-48 bg-white rounded-full translate-x-1/4 -translate-y-1/4"></div>
+        <div class="absolute bottom-0 left-0 w-64 h-64 bg-white rounded-full -translate-x-1/4 translate-y-1/4"></div>
+      </div>
 
+      <div class="container mx-auto relative z-10 text-center">
+        <div class="text-5xl md:text-6xl mb-3 md:mb-4 animate-bounce">💰</div>
+        <h1 class="text-2xl md:text-4xl font-black mb-2">
+          کیف پول شما
+        </h1>
+        <p class="text-sm md:text-base text-white/90">مدیریت موجودی و تراکنش‌های مالی</p>
+      </div>
+    </div>
+
+    <div class="container mx-auto px-4 pb-12">
       <!-- Balance Card -->
-      <div class="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl shadow-xl p-8 mb-6 text-white">
-        <div class="text-lg mb-2 opacity-90">موجودی حساب</div>
-        <div class="text-5xl font-black mb-6">
-          {{ walletStore.formattedBalance }}
-        </div>
+      <div class="bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 rounded-2xl md:rounded-3xl shadow-2xl p-6 md:p-8 mb-6 md:mb-8 text-white relative overflow-hidden">
+        <!-- Decorative Elements -->
+        <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+        <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
 
-        <div class="flex flex-wrap gap-4">
-          <button
-            @click="showTopUpModal = true"
-            class="flex-1 min-w-[150px] bg-white text-purple-600 font-bold py-3 px-6 rounded-xl hover:bg-gray-100 transition"
-          >
-            ➕ شارژ کیف پول
-          </button>
+        <div class="relative z-10">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="text-xl md:text-2xl">💵</div>
+            <div class="text-base md:text-lg opacity-90">موجودی حساب</div>
+          </div>
 
-          <button
-            @click="showWithdrawModal = true"
-            :disabled="walletStore.balance === 0"
-            class="flex-1 min-w-[150px] bg-purple-700 text-white font-bold py-3 px-6 rounded-xl hover:bg-purple-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            💸 برداشت
-          </button>
+          <div class="text-4xl md:text-6xl font-black mb-6 md:mb-8">
+            {{ walletStore.formattedBalance }}
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 md:gap-4">
+            <button
+              @click="showTopUpModal = true"
+              class="bg-white text-purple-600 font-bold py-3 md:py-4 px-4 md:px-6 rounded-xl md:rounded-2xl hover:bg-gray-100 transition-all shadow-lg active:scale-95 text-sm md:text-base"
+            >
+              <span class="text-lg md:text-xl mr-1">➕</span>
+              شارژ کیف پول
+            </button>
+
+            <button
+              @click="showWithdrawModal = true"
+              :disabled="walletStore.balance === 0"
+              class="bg-white/20 backdrop-blur text-white font-bold py-3 md:py-4 px-4 md:px-6 rounded-xl md:rounded-2xl hover:bg-white/30 transition-all border-2 border-white/50 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 text-sm md:text-base"
+            >
+              <span class="text-lg md:text-xl mr-1">💸</span>
+              برداشت
+            </button>
+          </div>
         </div>
       </div>
 
       <!-- Transactions -->
-      <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
-        <div class="p-6 border-b">
+      <div class="bg-white rounded-2xl md:rounded-3xl shadow-xl overflow-hidden">
+        <div class="p-4 md:p-6 border-b">
           <div class="flex items-center justify-between mb-4">
-            <h2 class="text-2xl font-bold text-gray-800">تاریخچه تراکنش‌ها</h2>
+            <div class="flex items-center gap-2">
+              <div class="text-xl md:text-2xl">📊</div>
+              <h2 class="text-lg md:text-2xl font-bold text-gray-800">تاریخچه تراکنش‌ها</h2>
+            </div>
 
             <button
               @click="loadTransactions"
-              class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm font-bold"
+              class="px-3 md:px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg md:rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all text-xs md:text-sm font-bold shadow-lg active:scale-95"
             >
-              🔄 بروزرسانی
+              🔄 <span class="hidden sm:inline">بروزرسانی</span>
             </button>
           </div>
 
-          <!-- Filter Tabs -->
-          <div class="flex gap-2 flex-wrap">
+          <!-- Filter Tabs - Mobile Optimized -->
+          <div class="grid grid-cols-2 md:flex md:flex-wrap gap-2">
             <button
               v-for="filter in transactionFilters"
               :key="filter.value"
               @click="selectedFilter = filter.value"
               :class="[
-                'px-4 py-2 rounded-lg font-bold transition-all text-sm',
+                'px-3 md:px-4 py-2 md:py-2.5 rounded-lg md:rounded-xl font-bold transition-all text-xs md:text-sm shadow-sm',
                 selectedFilter === filter.value
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md scale-105'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 active:scale-95'
               ]"
             >
               {{ filter.label }}
@@ -134,20 +162,28 @@
     <!-- Top Up Modal -->
     <div
       v-if="showTopUpModal"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center z-50 p-0 md:p-4"
       @click.self="showTopUpModal = false"
     >
-      <div class="bg-white rounded-2xl p-8 max-w-md w-full">
-        <h3 class="text-2xl font-bold text-gray-800 mb-6">شارژ کیف پول</h3>
+      <div class="bg-white rounded-t-3xl md:rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl animate-slide-up md:animate-none">
+        <!-- Handle (Mobile) -->
+        <div class="flex justify-center mb-4 md:hidden">
+          <div class="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+        </div>
+
+        <div class="flex items-center gap-3 mb-6">
+          <div class="text-3xl md:text-4xl">💳</div>
+          <h3 class="text-xl md:text-2xl font-bold text-gray-800">شارژ کیف پول</h3>
+        </div>
 
         <div class="mb-6">
-          <label class="block text-gray-700 font-bold mb-2">مبلغ (تومان)</label>
+          <label class="block text-gray-700 font-bold mb-2 text-sm md:text-base">مبلغ (تومان)</label>
           <input
             v-model.number="topUpAmount"
             type="number"
             step="10000"
             min="10000"
-            class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-600 focus:outline-none text-lg"
+            class="w-full px-4 py-3 md:py-4 border-2 border-gray-300 rounded-xl md:rounded-2xl focus:border-purple-600 focus:outline-none text-base md:text-lg"
             placeholder="مثال: 100000"
           />
 
@@ -157,7 +193,7 @@
               v-for="amount in [50000, 100000, 200000, 500000, 1000000, 2000000]"
               :key="amount"
               @click="topUpAmount = amount"
-              class="px-4 py-2 bg-gray-100 hover:bg-purple-100 hover:text-purple-600 rounded-lg font-bold transition text-sm"
+              class="px-2 md:px-4 py-2 md:py-2.5 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 text-purple-700 rounded-lg md:rounded-xl font-bold transition-all text-xs md:text-sm shadow-sm active:scale-95"
             >
               {{ formatPrice(amount) }}
             </button>
@@ -165,32 +201,32 @@
         </div>
 
         <div class="mb-6">
-          <label class="block text-gray-700 font-bold mb-2">درگاه پرداخت</label>
+          <label class="block text-gray-700 font-bold mb-2 text-sm md:text-base">درگاه پرداخت</label>
           <select
             v-model="selectedGateway"
-            class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-600 focus:outline-none"
+            class="w-full px-4 py-3 md:py-4 border-2 border-gray-300 rounded-xl md:rounded-2xl focus:border-purple-600 focus:outline-none text-sm md:text-base"
           >
-            <option value="zarinpal">زرین‌پال</option>
-            <option value="idpay">آیدی‌پی</option>
-            <option value="nextpay">نکست‌پی</option>
-            <option value="zibal">زیبال</option>
+            <option value="zarinpal">💳 زرین‌پال</option>
+            <option value="idpay">💰 آیدی‌پی</option>
+            <option value="nextpay">🔷 نکست‌پی</option>
+            <option value="zibal">⚡ زیبال</option>
           </select>
         </div>
 
-        <div class="flex gap-4">
+        <div class="grid grid-cols-2 gap-3">
           <button
-            @click="handleTopUp"
-            :disabled="topUpAmount < 10000 || walletStore.isLoading"
-            class="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-3 rounded-xl hover:from-purple-700 hover:to-pink-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            @click="showTopUpModal = false"
+            class="bg-gray-100 text-gray-700 font-bold py-3 md:py-4 rounded-xl md:rounded-2xl hover:bg-gray-200 transition-all active:scale-95 text-sm md:text-base"
           >
-            {{ walletStore.isLoading ? 'در حال پردازش...' : 'پرداخت' }}
+            انصراف
           </button>
 
           <button
-            @click="showTopUpModal = false"
-            class="flex-1 bg-gray-200 text-gray-700 font-bold py-3 rounded-xl hover:bg-gray-300 transition"
+            @click="handleTopUp"
+            :disabled="topUpAmount < 10000 || walletStore.isLoading"
+            class="bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-3 md:py-4 rounded-xl md:rounded-2xl hover:from-purple-700 hover:to-pink-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg active:scale-95 text-sm md:text-base"
           >
-            انصراف
+            {{ walletStore.isLoading ? '⏳ در حال پردازش...' : '✅ پرداخت' }}
           </button>
         </div>
       </div>
@@ -199,52 +235,61 @@
     <!-- Withdraw Modal -->
     <div
       v-if="showWithdrawModal"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center z-50 p-0 md:p-4"
       @click.self="showWithdrawModal = false"
     >
-      <div class="bg-white rounded-2xl p-8 max-w-md w-full">
-        <h3 class="text-2xl font-bold text-gray-800 mb-6">درخواست برداشت</h3>
+      <div class="bg-white rounded-t-3xl md:rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl animate-slide-up md:animate-none">
+        <!-- Handle (Mobile) -->
+        <div class="flex justify-center mb-4 md:hidden">
+          <div class="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+        </div>
+
+        <div class="flex items-center gap-3 mb-6">
+          <div class="text-3xl md:text-4xl">💸</div>
+          <h3 class="text-xl md:text-2xl font-bold text-gray-800">درخواست برداشت</h3>
+        </div>
 
         <div class="mb-6">
-          <label class="block text-gray-700 font-bold mb-2">مبلغ (تومان)</label>
+          <label class="block text-gray-700 font-bold mb-2 text-sm md:text-base">مبلغ (تومان)</label>
           <input
             v-model.number="withdrawAmount"
             type="number"
             step="10000"
             min="10000"
             :max="walletStore.balance"
-            class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-600 focus:outline-none text-lg"
+            class="w-full px-4 py-3 md:py-4 border-2 border-gray-300 rounded-xl md:rounded-2xl focus:border-purple-600 focus:outline-none text-base md:text-lg"
             placeholder="مثال: 100000"
           />
-          <div class="text-sm text-gray-500 mt-2">
-            حداکثر: {{ walletStore.formattedBalance }}
+          <div class="text-xs md:text-sm text-gray-500 mt-2 flex items-center gap-1">
+            <span>💰</span>
+            <span>حداکثر: {{ walletStore.formattedBalance }}</span>
           </div>
         </div>
 
         <div class="mb-6">
-          <label class="block text-gray-700 font-bold mb-2">شماره کارت یا شبا</label>
+          <label class="block text-gray-700 font-bold mb-2 text-sm md:text-base">شماره کارت یا شبا</label>
           <input
             v-model="bankAccount"
             type="text"
-            class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-600 focus:outline-none"
+            class="w-full px-4 py-3 md:py-4 border-2 border-gray-300 rounded-xl md:rounded-2xl focus:border-purple-600 focus:outline-none text-sm md:text-base"
             placeholder="مثال: 6037-9971-XXXX-XXXX"
           />
         </div>
 
-        <div class="flex gap-4">
+        <div class="grid grid-cols-2 gap-3">
           <button
-            @click="handleWithdraw"
-            :disabled="withdrawAmount < 10000 || withdrawAmount > walletStore.balance || walletStore.isLoading"
-            class="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-3 rounded-xl hover:from-purple-700 hover:to-pink-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            @click="showWithdrawModal = false"
+            class="bg-gray-100 text-gray-700 font-bold py-3 md:py-4 rounded-xl md:rounded-2xl hover:bg-gray-200 transition-all active:scale-95 text-sm md:text-base"
           >
-            {{ walletStore.isLoading ? 'در حال ثبت...' : 'ثبت درخواست' }}
+            انصراف
           </button>
 
           <button
-            @click="showWithdrawModal = false"
-            class="flex-1 bg-gray-200 text-gray-700 font-bold py-3 rounded-xl hover:bg-gray-300 transition"
+            @click="handleWithdraw"
+            :disabled="withdrawAmount < 10000 || withdrawAmount > walletStore.balance || walletStore.isLoading"
+            class="bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-3 md:py-4 rounded-xl md:rounded-2xl hover:from-purple-700 hover:to-pink-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg active:scale-95 text-sm md:text-base"
           >
-            انصراف
+            {{ walletStore.isLoading ? '⏳ در حال ثبت...' : '✅ ثبت درخواست' }}
           </button>
         </div>
       </div>
