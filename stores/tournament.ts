@@ -122,11 +122,18 @@ export const useTournamentStore = defineStore('tournament', {
         this.error = null
         const { apiFetch } = useApi()
 
-        const response = await apiFetch(`/tournaments/${id}/`)
+        // اگر id یک عدد نیست (یعنی slug است)، آن را encode می‌کنیم
+        const encodedId = typeof id === 'string' && isNaN(Number(id))
+          ? encodeURIComponent(id)
+          : id
+
+        console.log('Fetching tournament details:', { id, encodedId })
+        const response = await apiFetch(`/tournaments/${encodedId}/`)
         this.currentTournament = response
 
         return { success: true, data: response }
       } catch (error: any) {
+        console.error('Error fetching tournament details:', error)
         this.error = error.data?.message || 'خطا در دریافت جزئیات تورنومنت'
         return { success: false, message: this.error }
       } finally {
@@ -141,12 +148,16 @@ export const useTournamentStore = defineStore('tournament', {
         this.error = null
         const { apiFetch } = useApi()
 
-        const response = await apiFetch(`/tournaments/${tournamentId}/join/`, {
+        const encodedId = typeof tournamentId === 'string' && isNaN(Number(tournamentId))
+          ? encodeURIComponent(tournamentId)
+          : tournamentId
+
+        const response = await apiFetch(`/tournaments/${encodedId}/join/`, {
           method: 'POST'
         })
 
         // به‌روزرسانی تعداد شرکت‌کنندگان
-        if (this.currentTournament && this.currentTournament.id === Number(tournamentId)) {
+        if (this.currentTournament) {
           this.currentTournament.current_participants += 1
         }
 
@@ -170,7 +181,11 @@ export const useTournamentStore = defineStore('tournament', {
         this.error = null
         const { apiFetch } = useApi()
 
-        const response = await apiFetch(`/tournaments/${tournamentId}/participants/`)
+        const encodedId = typeof tournamentId === 'string' && isNaN(Number(tournamentId))
+          ? encodeURIComponent(tournamentId)
+          : tournamentId
+
+        const response = await apiFetch(`/tournaments/${encodedId}/participants/`)
         this.participants = response.results || response
 
         return { success: true }
@@ -189,7 +204,11 @@ export const useTournamentStore = defineStore('tournament', {
         this.error = null
         const { apiFetch } = useApi()
 
-        const response = await apiFetch(`/tournaments/${tournamentId}/rankings/`)
+        const encodedId = typeof tournamentId === 'string' && isNaN(Number(tournamentId))
+          ? encodeURIComponent(tournamentId)
+          : tournamentId
+
+        const response = await apiFetch(`/tournaments/${encodedId}/rankings/`)
         this.rankings = response.results || response
 
         return { success: true }

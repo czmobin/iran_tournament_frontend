@@ -139,8 +139,10 @@ const formatDate = (date: string) => {
 
 const goToDetails = () => {
   const router = useRouter()
-  const url = `/tournaments/${props.tournament.slug || props.tournament.id}`
-  console.log('Navigating to:', url)
+  // استفاده از slug برای SEO، اگر موجود نبود از ID استفاده می‌کنیم
+  const identifier = props.tournament.slug || props.tournament.id
+  const url = `/tournaments/${identifier}`
+  console.log('Navigating to:', url, 'Tournament:', props.tournament)
   router.push(url)
 }
 </script>
