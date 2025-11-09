@@ -139,7 +139,7 @@ const formatDate = (date: string) => {
 
 const goToDetails = () => {
   const router = useRouter()
-  const url = `/tournaments/${props.tournament.slug || props.tournament.id}`
+  const url = `/tournaments/${props.tournament.id}`
   console.log('Navigating to:', url)
   router.push(url)
 }
