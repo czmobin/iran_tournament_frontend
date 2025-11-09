@@ -73,23 +73,23 @@
         ></div>
       </div>
 
-      <!-- Button -->
-      <button
+      <!-- Status Badge (instead of button) -->
+      <div
         v-if="tournament.status === 'registration'"
-        class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-2.5 md:py-3 rounded-xl hover:from-purple-700 hover:to-pink-700 transition text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed"
-        :disabled="isFull"
-        @click.prevent="viewDetails"
+        :class="[
+          'w-full text-center font-bold py-2.5 md:py-3 rounded-xl text-sm md:text-base',
+          isFull ? 'bg-gray-100 text-gray-500' : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+        ]"
       >
         {{ isFull ? 'تورنومنت پر شده' : 'مشاهده جزئیات و ثبت‌نام' }}
-      </button>
+      </div>
 
-      <button
+      <div
         v-else
-        class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold py-2.5 md:py-3 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition text-sm md:text-base"
-        @click.prevent="viewDetails"
+        class="w-full text-center bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold py-2.5 md:py-3 rounded-xl text-sm md:text-base"
       >
         مشاهده جزئیات
-      </button>
+      </div>
     </div>
   </NuxtLink>
 </template>
@@ -135,9 +135,5 @@ const formatPrice = (price: number) => {
 
 const formatDate = (date: string) => {
   return new Date(date).toLocaleDateString('fa-IR')
-}
-
-const viewDetails = () => {
-  navigateTo(`/tournaments/${props.tournament.slug || props.tournament.id}`)
 }
 </script>
