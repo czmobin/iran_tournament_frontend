@@ -53,12 +53,30 @@ export interface TournamentRanking {
   updated_at: string
 }
 
+export interface BattleLog {
+  id: number
+  tournament: number
+  player: {
+    id: number
+    username: string
+    tag: string
+  }
+  opponent_tag: string
+  battle_time: string
+  result: 'win' | 'loss' | 'draw'
+  crowns_earned: number
+  crowns_lost: number
+  battle_data: any
+  synced_at: string
+}
+
 export const useTournamentStore = defineStore('tournament', {
   state: () => ({
     tournaments: [] as Tournament[],
     currentTournament: null as Tournament | null,
     participants: [] as TournamentParticipant[],
     rankings: [] as TournamentRanking[],
+    battleLogs: [] as BattleLog[],
     isLoading: false,
     error: null as string | null,
   }),
@@ -222,11 +240,63 @@ export const useTournamentStore = defineStore('tournament', {
       }
     },
 
+    // دریافت لاگ نبردها
+    async fetchBattleLogs(tournamentId: number | string) {
+      try {
+        this.isLoading = true
+        this.error = null
+        const { apiFetch } = useApi()
+
+        const encodedId = typeof tournamentId === 'string' && isNaN(Number(tournamentId))
+          ? encodeURIComponent(tournamentId)
+          : tournamentId
+
+        const response = await apiFetch(`/tournaments/${encodedId}/battle-logs/`)
+        this.battleLogs = response.results || response
+
+        return { success: true }
+      } catch (error: any) {
+        this.error = error.data?.message || 'خطا در دریافت لاگ نبردها'
+        return { success: false, message: this.error }
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    // همگام‌سازی دستی نبردها
+    async syncBattles(tournamentId: number | string) {
+      try {
+        this.isLoading = true
+        this.error = null
+        const { apiFetch } = useApi()
+
+        const encodedId = typeof tournamentId === 'string' && isNaN(Number(tournamentId))
+          ? encodeURIComponent(tournamentId)
+          : tournamentId
+
+        const response = await apiFetch(`/tournaments/${encodedId}/sync-battles/`, {
+          method: 'POST'
+        })
+
+        return { success: true, message: response.message || 'نبردها با موفقیت همگام‌سازی شدند' }
+      } catch (error: any) {
+        this.error = error.data?.message || 'خطا در همگام‌سازی نبردها'
+        return {
+          success: false,
+          message: this.error,
+          errors: error.data
+        }
+      } finally {
+        this.isLoading = false
+      }
+    },
+
     // پاک کردن تورنومنت فعلی
     clearCurrentTournament() {
       this.currentTournament = null
       this.participants = []
       this.rankings = []
+      this.battleLogs = []
     },
   }
 })

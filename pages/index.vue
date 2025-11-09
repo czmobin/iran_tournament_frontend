@@ -97,14 +97,17 @@
 
       <!-- Buttons - Responsive -->
       <div class="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center px-4">
-        <NuxtLink 
+        <NuxtLink
           to="/tournaments"
           class="bg-yellow-400 text-purple-900 px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg hover:bg-yellow-300 transition transform hover:scale-105"
         >
           شروع کنید 🚀
         </NuxtLink>
-        
-        <button class="bg-white/20 backdrop-blur text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg hover:bg-white/30 transition border-2 border-white/50">
+
+        <button
+          @click="showLearnMore = true"
+          class="bg-white/20 backdrop-blur text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg hover:bg-white/30 transition border-2 border-white/50"
+        >
           بیشتر بدانید
         </button>
       </div>
@@ -115,15 +118,100 @@
           <div class="text-3xl md:text-4xl font-black text-yellow-400 mb-2">{{ stats.tournaments }}</div>
           <div class="text-white/80 text-sm md:text-base">تورنومنت برگزار شده</div>
         </div>
-        
+
         <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
           <div class="text-3xl md:text-4xl font-black text-yellow-400 mb-2">{{ stats.players }}</div>
           <div class="text-white/80 text-sm md:text-base">بازیکن فعال</div>
         </div>
-        
+
         <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
           <div class="text-3xl md:text-4xl font-black text-yellow-400 mb-2">{{ stats.prizes }}</div>
           <div class="text-white/80 text-sm md:text-base">جوایز پرداخت شده</div>
+        </div>
+      </div>
+
+      <!-- Learn More Section - Responsive -->
+      <div v-if="showLearnMore" class="mt-16 md:mt-20 max-w-5xl mx-auto">
+        <div class="bg-white/10 backdrop-blur-lg rounded-3xl p-6 md:p-10 border border-white/20">
+          <!-- Close Button -->
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-2xl md:text-3xl font-black text-white">
+              درباره ایران تورنومنت
+            </h3>
+            <button
+              @click="showLearnMore = false"
+              class="text-white/60 hover:text-white transition p-2"
+            >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Content Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+            <!-- چگونه کار می‌کند -->
+            <div class="bg-white/5 rounded-2xl p-6">
+              <div class="text-4xl mb-4">🎮</div>
+              <h4 class="text-xl font-bold text-white mb-3">چگونه کار می‌کند؟</h4>
+              <ul class="text-white/80 space-y-2 text-sm md:text-base">
+                <li>✓ ابتدا در سایت ثبت‌نام کنید</li>
+                <li>✓ تگ کلش رویال خود را وصل کنید</li>
+                <li>✓ در تورنومنت دلخواه ثبت‌نام کنید</li>
+                <li>✓ در زمان مقرر در بازی شرکت کنید</li>
+                <li>✓ جایزه خود را دریافت کنید!</li>
+              </ul>
+            </div>
+
+            <!-- امنیت و اعتماد -->
+            <div class="bg-white/5 rounded-2xl p-6">
+              <div class="text-4xl mb-4">🔒</div>
+              <h4 class="text-xl font-bold text-white mb-3">امنیت و اعتماد</h4>
+              <ul class="text-white/80 space-y-2 text-sm md:text-base">
+                <li>✓ اتصال مستقیم به API کلش رویال</li>
+                <li>✓ پرداخت امن از طریق درگاه معتبر</li>
+                <li>✓ شفافیت کامل در نتایج</li>
+                <li>✓ پشتیبانی ۲۴ساعته</li>
+                <li>✓ پرداخت سریع جوایز</li>
+              </ul>
+            </div>
+
+            <!-- ویژگی‌های پلتفرم -->
+            <div class="bg-white/5 rounded-2xl p-6">
+              <div class="text-4xl mb-4">⚡</div>
+              <h4 class="text-xl font-bold text-white mb-3">ویژگی‌ها</h4>
+              <ul class="text-white/80 space-y-2 text-sm md:text-base">
+                <li>✓ لیدربورد زنده و لحظه‌ای</li>
+                <li>✓ چت اختصاصی هر تورنومنت</li>
+                <li>✓ سیستم کیف پول داخلی</li>
+                <li>✓ تاریخچه کامل بازی‌ها</li>
+                <li>✓ اعلان‌های لحظه‌ای</li>
+              </ul>
+            </div>
+
+            <!-- انواع تورنومنت -->
+            <div class="bg-white/5 rounded-2xl p-6">
+              <div class="text-4xl mb-4">🏆</div>
+              <h4 class="text-xl font-bold text-white mb-3">انواع تورنومنت</h4>
+              <ul class="text-white/80 space-y-2 text-sm md:text-base">
+                <li>✓ تورنومنت‌های رایگان تمرینی</li>
+                <li>✓ مسابقات با جایزه نقدی</li>
+                <li>✓ لیگ‌های فصلی</li>
+                <li>✓ رویدادهای ویژه</li>
+                <li>✓ تورنومنت‌های اختصاصی کلن</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Call to Action -->
+          <div class="mt-8 text-center">
+            <NuxtLink
+              to="/tournaments"
+              class="inline-block bg-yellow-400 text-purple-900 px-8 py-4 rounded-xl font-bold text-lg hover:bg-yellow-300 transition transform hover:scale-105"
+            >
+              همین حالا شروع کن! 🚀
+            </NuxtLink>
+          </div>
         </div>
       </div>
     </main>
@@ -136,6 +224,7 @@ import { useTournamentStore } from '~/stores/tournament'
 const authStore = useAuthStore()
 const tournamentStore = useTournamentStore()
 const mobileMenuOpen = ref(false)
+const showLearnMore = ref(false)
 
 const stats = ref({
   tournaments: 0,
