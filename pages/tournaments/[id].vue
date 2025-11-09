@@ -1,29 +1,42 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div class="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
     <!-- Loading State -->
-    <div v-if="isLoading" class="flex justify-center items-center py-20">
-      <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-purple-600"></div>
+    <div v-if="isLoading" class="flex flex-col justify-center items-center py-16 md:py-20">
+      <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-purple-600 mb-4"></div>
+      <p class="text-gray-600 font-bold">در حال بارگذاری جزئیات...</p>
     </div>
 
     <!-- Error State -->
     <div v-else-if="error" class="container mx-auto px-4 py-12">
-      <div class="bg-red-50 border-l-4 border-red-500 p-6 rounded-lg">
-        <p class="text-red-700 font-bold">{{ error }}</p>
+      <div class="bg-white rounded-2xl md:rounded-3xl shadow-xl p-6 md:p-8 text-center">
+        <div class="text-6xl mb-4">😕</div>
+        <p class="text-red-700 font-bold text-lg mb-4">{{ error }}</p>
         <NuxtLink
           to="/tournaments"
-          class="mt-4 inline-block px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+          class="inline-block px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-xl font-bold hover:from-red-700 hover:to-pink-700 transition-all shadow-lg active:scale-95"
         >
-          بازگشت به لیست تورنومنت‌ها
+          🔙 بازگشت به لیست تورنومنت‌ها
         </NuxtLink>
       </div>
     </div>
 
     <!-- Tournament Details -->
-    <div v-else-if="tournament" class="container mx-auto px-4 py-12">
+    <div v-else-if="tournament" class="container mx-auto px-4 py-6 md:py-12">
+      <!-- Back Button (Mobile) -->
+      <button
+        @click="$router.back()"
+        class="mb-4 md:hidden flex items-center gap-2 text-purple-600 font-bold active:scale-95 transition-transform"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+        بازگشت
+      </button>
+
       <!-- Header -->
-      <div class="bg-white rounded-2xl shadow-xl overflow-hidden mb-6">
+      <div class="bg-white rounded-2xl md:rounded-3xl shadow-xl overflow-hidden mb-4 md:mb-6">
         <!-- Cover Image -->
-        <div class="h-64 bg-gradient-to-r from-purple-500 to-pink-500 relative">
+        <div class="h-48 md:h-64 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 relative">
           <img
             v-if="tournament.cover_image"
             :src="tournament.cover_image"
@@ -34,7 +47,7 @@
           <!-- Status Badge -->
           <div
             :class="[
-              'absolute top-4 right-4 px-4 py-2 rounded-full text-sm font-bold',
+              'absolute top-3 md:top-4 right-3 md:right-4 px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-bold shadow-lg',
               statusBadgeClass
             ]"
           >
@@ -43,43 +56,43 @@
         </div>
 
         <!-- Tournament Info -->
-        <div class="p-8">
-          <h1 class="text-4xl font-black text-gray-800 mb-4">
+        <div class="p-4 md:p-8">
+          <h1 class="text-2xl md:text-4xl font-black text-gray-800 mb-3 md:mb-4">
             {{ tournament.title }}
           </h1>
 
-          <p class="text-lg text-gray-600 mb-6">
+          <p class="text-sm md:text-lg text-gray-600 mb-4 md:mb-6">
             {{ tournament.description }}
           </p>
 
-          <!-- Stats Grid -->
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div class="bg-purple-50 rounded-xl p-4 text-center">
-              <div class="text-2xl font-bold text-purple-600">
+          <!-- Stats Grid - Mobile Optimized -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
+            <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl md:rounded-2xl p-3 md:p-4 text-center border border-purple-200">
+              <div class="text-lg md:text-2xl font-black text-purple-600 mb-1">
                 {{ formatPrice(tournament.entry_fee) }}
               </div>
-              <div class="text-sm text-gray-600">هزینه ورودی</div>
+              <div class="text-xs md:text-sm text-gray-600">💰 هزینه ورودی</div>
             </div>
 
-            <div class="bg-green-50 rounded-xl p-4 text-center">
-              <div class="text-2xl font-bold text-green-600">
+            <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl md:rounded-2xl p-3 md:p-4 text-center border border-green-200">
+              <div class="text-lg md:text-2xl font-black text-green-600 mb-1">
                 {{ formatPrice(tournament.prize_pool) }}
               </div>
-              <div class="text-sm text-gray-600">جایزه کل</div>
+              <div class="text-xs md:text-sm text-gray-600">🏆 جایزه کل</div>
             </div>
 
-            <div class="bg-blue-50 rounded-xl p-4 text-center">
-              <div class="text-2xl font-bold text-blue-600">
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl md:rounded-2xl p-3 md:p-4 text-center border border-blue-200">
+              <div class="text-lg md:text-2xl font-black text-blue-600 mb-1">
                 {{ tournament.current_participants }} / {{ tournament.max_participants }}
               </div>
-              <div class="text-sm text-gray-600">شرکت‌کنندگان</div>
+              <div class="text-xs md:text-sm text-gray-600">👥 شرکت‌کنندگان</div>
             </div>
 
-            <div class="bg-yellow-50 rounded-xl p-4 text-center">
-              <div class="text-2xl font-bold text-yellow-600">
+            <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl md:rounded-2xl p-3 md:p-4 text-center border border-yellow-200">
+              <div class="text-lg md:text-2xl font-black text-yellow-600 mb-1">
                 {{ formatDate(tournament.start_date) }}
               </div>
-              <div class="text-sm text-gray-600">تاریخ شروع</div>
+              <div class="text-xs md:text-sm text-gray-600">📅 تاریخ شروع</div>
             </div>
           </div>
 
@@ -113,26 +126,27 @@
       </div>
 
       <!-- Tabs -->
-      <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
-        <!-- Tab Headers -->
-        <div class="flex border-b">
+      <div class="bg-white rounded-2xl md:rounded-3xl shadow-xl overflow-hidden">
+        <!-- Tab Headers - Mobile Scrollable -->
+        <div class="flex border-b overflow-x-auto scrollbar-hide">
           <button
             v-for="tab in tabs"
             :key="tab.id"
             @click="activeTab = tab.id"
             :class="[
-              'flex-1 px-6 py-4 font-bold transition-colors',
+              'flex-shrink-0 px-4 md:px-6 py-3 md:py-4 font-bold transition-all text-sm md:text-base',
               activeTab === tab.id
-                ? 'bg-purple-600 text-white'
-                : 'text-gray-600 hover:bg-gray-100'
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
+                : 'text-gray-600 hover:bg-gray-100 active:bg-gray-200'
             ]"
           >
+            <span class="mr-1">{{ tab.icon }}</span>
             {{ tab.label }}
           </button>
         </div>
 
         <!-- Tab Content -->
-        <div class="p-6">
+        <div class="p-4 md:p-6">
           <!-- Rules Tab -->
           <div v-if="activeTab === 'rules'">
             <h3 class="text-2xl font-bold text-gray-800 mb-4">قوانین تورنومنت</h3>
@@ -184,20 +198,76 @@
 
           <!-- Rankings Tab -->
           <div v-else-if="activeTab === 'rankings'">
-            <h3 class="text-2xl font-bold text-gray-800 mb-4">رنکینگ و جدول امتیازات</h3>
+            <h3 class="text-xl md:text-2xl font-bold text-gray-800 mb-4">🏆 رنکینگ و جدول امتیازات</h3>
 
             <div v-if="loadingRankings" class="flex justify-center py-8">
               <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-purple-600"></div>
             </div>
 
             <div v-else-if="rankings.length === 0" class="text-center py-8 text-gray-500">
-              هنوز رنکینگی ثبت نشده است
+              <div class="text-6xl mb-4">🏆</div>
+              <p>هنوز رنکینگی ثبت نشده است</p>
             </div>
 
-            <div v-else class="overflow-x-auto">
+            <!-- Mobile: Card Layout -->
+            <div v-else class="block md:hidden space-y-3">
+              <div
+                v-for="(ranking, index) in rankings"
+                :key="ranking.id"
+                :class="[
+                  'rounded-xl p-4 border-2',
+                  index === 0 ? 'bg-gradient-to-r from-yellow-50 to-yellow-100 border-yellow-300' :
+                  index === 1 ? 'bg-gradient-to-r from-gray-50 to-gray-100 border-gray-300' :
+                  index === 2 ? 'bg-gradient-to-r from-orange-50 to-orange-100 border-orange-300' :
+                  'bg-white border-gray-200'
+                ]"
+              >
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-3">
+                    <div class="text-3xl">
+                      <span v-if="index === 0">🥇</span>
+                      <span v-else-if="index === 1">🥈</span>
+                      <span v-else-if="index === 2">🥉</span>
+                      <span v-else class="text-xl font-bold text-gray-600">#{{ ranking.rank }}</span>
+                    </div>
+                    <div>
+                      <div class="font-bold text-gray-800">
+                        {{ ranking.user.first_name }} {{ ranking.user.last_name }}
+                      </div>
+                      <div class="text-sm text-gray-500">@{{ ranking.user.username }}</div>
+                    </div>
+                  </div>
+                  <div class="text-2xl font-black text-blue-600">
+                    {{ ranking.score }}
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-gray-200">
+                  <div class="text-center">
+                    <div class="text-lg font-bold text-green-600">{{ ranking.wins }}</div>
+                    <div class="text-xs text-gray-500">برد</div>
+                  </div>
+                  <div class="text-center">
+                    <div class="text-lg font-bold text-red-600">{{ ranking.losses }}</div>
+                    <div class="text-xs text-gray-500">باخت</div>
+                  </div>
+                  <div class="text-center">
+                    <div class="text-lg font-bold text-gray-600">{{ ranking.draws }}</div>
+                    <div class="text-xs text-gray-500">مساوی</div>
+                  </div>
+                </div>
+
+                <div class="mt-2 text-center text-sm text-purple-600 font-bold">
+                  👑 تاج‌ها: {{ ranking.crowns_earned }} - {{ ranking.crowns_lost }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Desktop: Table Layout -->
+            <div v-else class="hidden md:block overflow-x-auto">
               <table class="w-full">
                 <thead>
-                  <tr class="bg-gray-100 text-gray-700">
+                  <tr class="bg-gradient-to-r from-purple-100 to-pink-100 text-gray-700">
                     <th class="px-4 py-3 text-right">رنک</th>
                     <th class="px-4 py-3 text-right">بازیکن</th>
                     <th class="px-4 py-3 text-center">برد</th>
@@ -276,10 +346,10 @@ const loadingRankings = ref(false)
 const joiningTournament = ref(false)
 
 const tabs = [
-  { id: 'rules', label: 'قوانین' },
-  { id: 'participants', label: 'شرکت‌کنندگان' },
-  { id: 'rankings', label: 'رنکینگ' },
-  { id: 'chat', label: 'چت' }
+  { id: 'rules', label: 'قوانین', icon: '📋' },
+  { id: 'participants', label: 'شرکت‌کنندگان', icon: '👥' },
+  { id: 'rankings', label: 'رنکینگ', icon: '🏆' },
+  { id: 'chat', label: 'چت', icon: '💬' }
 ]
 
 const tournament = computed(() => tournamentStore.currentTournament)
