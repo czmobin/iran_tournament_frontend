@@ -25,7 +25,12 @@ export const useTournamentChat = () => {
       isLoading.value = true
       error.value = null
 
-      const response = await apiFetch(`/tournaments/chat/tournament/${tournamentSlug}/`)
+      // Encode slug برای سازگاری با slug های فارسی
+      const encodedSlug = typeof tournamentSlug === 'string' && isNaN(Number(tournamentSlug))
+        ? encodeURIComponent(tournamentSlug)
+        : tournamentSlug
+
+      const response = await apiFetch(`/tournaments/chat/tournament/${encodedSlug}/`)
       messages.value = response.results || response
 
       return { success: true }

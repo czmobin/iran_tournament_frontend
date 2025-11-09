@@ -151,7 +151,7 @@
               :key="tournament.id"
               class="bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition"
             >
-              <NuxtLink :to="`/tournaments/${tournament.id}`" class="block">
+              <NuxtLink :to="`/tournaments/${tournament.slug || tournament.id}`" class="block">
                 <div class="flex items-center justify-between">
                   <div class="flex-1">
                     <h3 class="font-bold text-gray-800">{{ tournament.title }}</h3>
