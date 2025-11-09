@@ -9,25 +9,10 @@ export const useApi = () => {
       // Add auth token to requests
       const token = authStore.accessToken
       if (token) {
-        // Initialize headers if not exists
-        if (!options.headers) {
-          options.headers = {}
-        }
-
-        // Convert Headers to plain object if needed
-        if (options.headers instanceof Headers) {
-          const headersObj: Record<string, string> = {}
-          options.headers.forEach((value, key) => {
-            headersObj[key] = value
-          })
-          options.headers = headersObj
-        }
-
-        // Add Authorization header
-        options.headers = {
-          ...options.headers as Record<string, string>,
-          Authorization: `Bearer ${token}`
-        }
+        // Ensure headers is a Headers instance
+        const headers = new Headers(options.headers as HeadersInit)
+        headers.set('Authorization', `Bearer ${token}`)
+        options.headers = headers
       }
     },
 
