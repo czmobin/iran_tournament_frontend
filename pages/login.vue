@@ -149,15 +149,23 @@ const handleLogin = async () => {
 
   const result = await authStore.login(username.value, password.value)
 
-  loading.value = false
-
   if (result.success) {
-    setTimeout(() => {
-      router.push('/dashboard')
-    }, 500)
+    console.log('Login successful, tokens saved:', {
+      hasAccessToken: !!authStore.accessToken,
+      hasRefreshToken: !!authStore.refreshToken,
+      hasUser: !!authStore.user
+    })
+
+    // مطمئن شو توکن‌ها ذخیره شدن
+    await nextTick()
+
+    // استفاده از navigateTo به جای router.push
+    await navigateTo('/dashboard', { replace: true })
   } else {
     errorMessage.value = result.message
   }
+
+  loading.value = false
 }
 
 useHead({
