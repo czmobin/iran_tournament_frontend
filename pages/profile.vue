@@ -1,17 +1,11 @@
 <template>
   <div class="min-h-screen bg-gray-50">
-    <header class="bg-white shadow-sm">
-      <div class="container mx-auto px-4 py-4">
-        <div class="flex items-center gap-4">
-          <NuxtLink to="/dashboard" class="text-gray-600 hover:text-gray-800">
-            ← بازگشت
-          </NuxtLink>
-          <h1 class="text-2xl font-bold text-gray-800">ویرایش پروفایل</h1>
-        </div>
-      </div>
-    </header>
-
     <main class="container mx-auto px-4 py-8 max-w-2xl">
+      <!-- Page Header -->
+      <div class="mb-6">
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-800">ویرایش پروفایل</h1>
+        <p class="text-gray-600 mt-1">اطلاعات حساب کاربری خود را ویرایش کنید</p>
+      </div>
       <!-- Messages -->
       <div v-if="successMessage" class="bg-green-50 border-r-4 border-green-500 text-green-700 p-4 mb-6 rounded-lg">
         <p class="font-medium">{{ successMessage }}</p>
