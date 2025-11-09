@@ -1,9 +1,26 @@
 <template>
-  <div class="bg-white rounded-xl md:rounded-2xl shadow-lg md:shadow-xl overflow-hidden hover:shadow-2xl transition transform hover:-translate-y-1 md:hover:-translate-y-2">
+  <NuxtLink
+    :to="`/tournaments/${tournament.slug || tournament.id}`"
+    class="block bg-white rounded-xl md:rounded-2xl shadow-lg md:shadow-xl overflow-hidden hover:shadow-2xl transition transform hover:-translate-y-1 md:hover:-translate-y-2"
+  >
     <!-- Banner -->
     <div class="h-32 md:h-40 bg-gradient-to-r from-purple-500 to-pink-500 relative">
-      <div class="absolute top-3 md:top-4 right-3 md:right-4 bg-green-500 text-white px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-bold">
-        {{ tournament.status }}
+      <!-- Cover Image if available -->
+      <img
+        v-if="tournament.cover_image"
+        :src="tournament.cover_image"
+        :alt="tournament.title"
+        class="w-full h-full object-cover"
+      />
+
+      <!-- Status Badge -->
+      <div
+        :class="[
+          'absolute top-3 md:top-4 right-3 md:right-4 px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-bold',
+          statusBadgeClass
+        ]"
+      >
+        {{ statusText }}
       </div>
     </div>
 
@@ -12,7 +29,7 @@
       <h3 class="text-lg md:text-2xl font-bold text-gray-800 mb-2">
         {{ tournament.title }}
       </h3>
-      
+
       <p class="text-sm md:text-base text-gray-600 mb-3 md:mb-4 line-clamp-2">
         {{ tournament.description }}
       </p>
@@ -39,7 +56,7 @@
         <div class="text-xs md:text-sm text-gray-600">
           👥 {{ tournament.current_participants }} / {{ tournament.max_participants }} بازیکن
         </div>
-        
+
         <div class="text-xs md:text-sm text-gray-600">
           📅 {{ formatDate(tournament.start_date) }}
         </div>
@@ -47,40 +64,69 @@
 
       <!-- Progress Bar -->
       <div class="w-full bg-gray-200 rounded-full h-2 mb-3 md:mb-4">
-        <div 
-          class="bg-purple-600 h-2 rounded-full transition-all"
+        <div
+          :class="[
+            'h-2 rounded-full transition-all',
+            isFull ? 'bg-red-500' : 'bg-purple-600'
+          ]"
           :style="{ width: participantsPercent + '%' }"
         ></div>
       </div>
 
       <!-- Button -->
-      <button 
-        class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-2.5 md:py-3 rounded-xl hover:from-purple-700 hover:to-pink-700 transition text-sm md:text-base"
-        @click="joinTournament"
+      <button
+        v-if="tournament.status === 'registration'"
+        class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-2.5 md:py-3 rounded-xl hover:from-purple-700 hover:to-pink-700 transition text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+        :disabled="isFull"
+        @click.prevent="viewDetails"
       >
-        ثبت‌نام در تورنومنت
+        {{ isFull ? 'تورنومنت پر شده' : 'مشاهده جزئیات و ثبت‌نام' }}
+      </button>
+
+      <button
+        v-else
+        class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold py-2.5 md:py-3 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition text-sm md:text-base"
+        @click.prevent="viewDetails"
+      >
+        مشاهده جزئیات
       </button>
     </div>
-  </div>
+  </NuxtLink>
 </template>
 
 <script setup lang="ts">
+import type { Tournament } from '~/stores/tournament'
+
 const props = defineProps<{
-  tournament: {
-    id: number
-    title: string
-    description: string
-    entry_fee: number
-    prize_pool: number
-    max_participants: number
-    current_participants: number
-    start_date: string
-    status: string
-  }
+  tournament: Tournament
 }>()
 
 const participantsPercent = computed(() => {
   return (props.tournament.current_participants / props.tournament.max_participants) * 100
+})
+
+const isFull = computed(() => {
+  return props.tournament.current_participants >= props.tournament.max_participants
+})
+
+const statusText = computed(() => {
+  const statusMap: Record<string, string> = {
+    draft: 'پیش‌نویس',
+    registration: 'ثبت‌نام',
+    ongoing: 'در حال برگزاری',
+    finished: 'پایان یافته'
+  }
+  return statusMap[props.tournament.status] || props.tournament.status
+})
+
+const statusBadgeClass = computed(() => {
+  const classMap: Record<string, string> = {
+    draft: 'bg-gray-500 text-white',
+    registration: 'bg-green-500 text-white',
+    ongoing: 'bg-yellow-500 text-white',
+    finished: 'bg-red-500 text-white'
+  }
+  return classMap[props.tournament.status] || 'bg-gray-500 text-white'
 })
 
 const formatPrice = (price: number) => {
@@ -91,7 +137,7 @@ const formatDate = (date: string) => {
   return new Date(date).toLocaleDateString('fa-IR')
 }
 
-const joinTournament = () => {
-  alert('قابلیت ثبت‌نام بزودی اضافه میشه!')
+const viewDetails = () => {
+  navigateTo(`/tournaments/${props.tournament.slug || props.tournament.id}`)
 }
 </script>
