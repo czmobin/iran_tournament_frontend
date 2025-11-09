@@ -138,11 +138,11 @@ const formatDate = (date: string) => {
 }
 
 const goToDetails = () => {
-  const router = useRouter()
   // استفاده از slug برای SEO، اگر موجود نبود از ID استفاده می‌کنیم
   const identifier = props.tournament.slug || props.tournament.id
   const url = `/tournaments/${identifier}`
   console.log('Navigating to:', url, 'Tournament:', props.tournament)
-  router.push(url)
+  // در Nuxt 3 باید از navigateTo استفاده کنیم نه router.push
+  navigateTo(url)
 }
 </script>
