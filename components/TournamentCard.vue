@@ -137,12 +137,22 @@ const formatDate = (date: string) => {
   return new Date(date).toLocaleDateString('fa-IR')
 }
 
-const goToDetails = () => {
-  // استفاده از slug برای SEO، اگر موجود نبود از ID استفاده می‌کنیم
-  const identifier = props.tournament.slug || props.tournament.id
-  const url = `/tournaments/${identifier}`
-  console.log('Navigating to:', url, 'Tournament:', props.tournament)
-  // در Nuxt 3 باید از navigateTo استفاده کنیم نه router.push
-  navigateTo(url)
+const goToDetails = async (event?: MouseEvent) => {
+  console.log('🎯 Click detected!', event)
+
+  try {
+    // استفاده از slug برای SEO، اگر موجود نبود از ID استفاده می‌کنیم
+    const identifier = props.tournament.slug || props.tournament.id
+    const url = `/tournaments/${identifier}`
+    console.log('🔄 Navigating to:', url, 'Identifier:', identifier, 'Tournament:', props.tournament)
+
+    // در Nuxt 3 باید از navigateTo استفاده کنیم نه router.push
+    const result = await navigateTo(url)
+    console.log('✅ Navigation result:', result)
+  } catch (error) {
+    console.error('❌ Navigation error:', error)
+    // نمایش خطا به کاربر
+    alert('خطا در باز کردن صفحه: ' + (error as Error).message)
+  }
 }
 </script>
