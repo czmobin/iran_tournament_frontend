@@ -158,22 +158,66 @@ export const useAuthStore = defineStore('auth', {
     
     async fetchProfile() {
       if (!this.accessToken) return { success: false }
-      
+
       try {
         this.isLoading = true
         const { apiFetch } = useApi()
-        
-        const response = await apiFetch('/auth/profile/')
-        
+
+        const response = await apiFetch('/accounts/profile/')
+
         this.user = response
         this.saveToStorage()
-        
+
         return { success: true }
       } catch (error) {
         console.error('Error fetching profile:', error)
         throw error // ← مهم: throw کن تا initialize بفهمه
       } finally {
         this.isLoading = false
+      }
+    },
+
+    async updateProfile(profileData: Partial<User>) {
+      if (!this.accessToken) return { success: false }
+
+      try {
+        this.isLoading = true
+        const { apiFetch } = useApi()
+
+        const response = await apiFetch('/accounts/profile/', {
+          method: 'PUT',
+          body: profileData
+        })
+
+        this.user = response
+        this.saveToStorage()
+
+        return { success: true, message: 'پروفایل با موفقیت به‌روزرسانی شد' }
+      } catch (error: any) {
+        return {
+          success: false,
+          message: error.data?.message || 'خطا در به‌روزرسانی پروفایل',
+          errors: error.data
+        }
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    async fetchStats() {
+      if (!this.accessToken) return { success: false }
+
+      try {
+        const { apiFetch } = useApi()
+
+        const response = await apiFetch('/accounts/stats/')
+
+        return { success: true, data: response }
+      } catch (error: any) {
+        return {
+          success: false,
+          message: error.data?.message || 'خطا در دریافت آمار'
+        }
       }
     },
     
