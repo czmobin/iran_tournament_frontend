@@ -129,18 +129,24 @@
           <div class="text-white/80 text-sm md:text-base">جوایز پرداخت شده</div>
         </div>
       </div>
+    </main>
 
-      <!-- Learn More Section - Responsive -->
-      <div v-if="showLearnMore" class="mt-16 md:mt-20 max-w-5xl mx-auto">
-        <div class="bg-white/10 backdrop-blur-lg rounded-3xl p-6 md:p-10 border border-white/20">
+    <!-- Learn More Modal - Fixed Overlay -->
+    <Transition name="modal">
+      <div
+        v-if="showLearnMore"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+        @click.self="showLearnMore = false"
+      >
+        <div class="bg-gradient-to-br from-purple-600 to-blue-600 rounded-3xl p-6 md:p-10 border border-white/20 max-w-5xl w-full max-h-[90vh] overflow-y-auto">
           <!-- Close Button -->
-          <div class="flex justify-between items-center mb-6">
+          <div class="flex justify-between items-center mb-6 sticky top-0 bg-gradient-to-br from-purple-600 to-blue-600 pb-4">
             <h3 class="text-2xl md:text-3xl font-black text-white">
               درباره ایران تورنومنت
             </h3>
             <button
               @click="showLearnMore = false"
-              class="text-white/60 hover:text-white transition p-2"
+              class="text-white/80 hover:text-white transition p-2 hover:bg-white/10 rounded-lg"
             >
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -151,7 +157,7 @@
           <!-- Content Grid -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
             <!-- چگونه کار می‌کند -->
-            <div class="bg-white/5 rounded-2xl p-6">
+            <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6">
               <div class="text-4xl mb-4">🎮</div>
               <h4 class="text-xl font-bold text-white mb-3">چگونه کار می‌کند؟</h4>
               <ul class="text-white/80 space-y-2 text-sm md:text-base">
@@ -164,7 +170,7 @@
             </div>
 
             <!-- امنیت و اعتماد -->
-            <div class="bg-white/5 rounded-2xl p-6">
+            <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6">
               <div class="text-4xl mb-4">🔒</div>
               <h4 class="text-xl font-bold text-white mb-3">امنیت و اعتماد</h4>
               <ul class="text-white/80 space-y-2 text-sm md:text-base">
@@ -177,7 +183,7 @@
             </div>
 
             <!-- ویژگی‌های پلتفرم -->
-            <div class="bg-white/5 rounded-2xl p-6">
+            <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6">
               <div class="text-4xl mb-4">⚡</div>
               <h4 class="text-xl font-bold text-white mb-3">ویژگی‌ها</h4>
               <ul class="text-white/80 space-y-2 text-sm md:text-base">
@@ -190,7 +196,7 @@
             </div>
 
             <!-- انواع تورنومنت -->
-            <div class="bg-white/5 rounded-2xl p-6">
+            <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6">
               <div class="text-4xl mb-4">🏆</div>
               <h4 class="text-xl font-bold text-white mb-3">انواع تورنومنت</h4>
               <ul class="text-white/80 space-y-2 text-sm md:text-base">
@@ -208,13 +214,14 @@
             <NuxtLink
               to="/tournaments"
               class="inline-block bg-yellow-400 text-purple-900 px-8 py-4 rounded-xl font-bold text-lg hover:bg-yellow-300 transition transform hover:scale-105"
+              @click="showLearnMore = false"
             >
               همین حالا شروع کن! 🚀
             </NuxtLink>
           </div>
         </div>
       </div>
-    </main>
+    </Transition>
   </div>
 </template>
 
@@ -271,3 +278,27 @@ useHead({
   ]
 })
 </script>
+
+<style scoped>
+/* Modal Transition Animations */
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.modal-enter-active > div,
+.modal-leave-active > div {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+
+.modal-enter-from > div,
+.modal-leave-to > div {
+  transform: scale(0.9);
+  opacity: 0;
+}
+</style>
