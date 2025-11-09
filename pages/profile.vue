@@ -158,9 +158,11 @@ const handleSubmit = async () => {
     console.log('Response:', response) // Debug
 
     // Update store
-    authStore.updateUser(response.user)
-    
-    successMessage.value = 'پروفایل با موفقیت بروزرسانی شد!'
+    if (response.user) {
+      authStore.updateUser(response.user)
+    }
+
+    successMessage.value = response.message || 'پروفایل با موفقیت بروزرسانی شد!'
     
     window.scrollTo({ top: 0, behavior: 'smooth' })
   } catch (error: any) {
@@ -177,14 +179,3 @@ useHead({
   title: 'ویرایش پروفایل - ایران تورنومنت'
 })
 </script>
-```
-
----
-
-### **2. چک کن که Backend URL درسته:**
-
-در مرورگر Console (F12) چک کن که چه URL ای میزنه.
-
-باید این باشه:
-```
-POST http://localhost:8000/api/auth/profile/update/
