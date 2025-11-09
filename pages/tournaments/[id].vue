@@ -338,7 +338,19 @@ const route = useRoute()
 const tournamentStore = useTournamentStore()
 const authStore = useAuthStore()
 
-const tournamentId = route.params.id as string
+// Decode URL parameter to handle Persian slugs correctly
+const tournamentId = computed(() => {
+  const rawId = route.params.id as string
+  // If it's already decoded (contains Persian chars), return as-is
+  // Otherwise, decode it
+  try {
+    return decodeURIComponent(rawId)
+  } catch {
+    return rawId
+  }
+})
+
+const tournamentIdValue = tournamentId.value
 
 const isLoading = ref(true)
 const error = ref<string | null>(null)
@@ -399,7 +411,8 @@ const loadTournamentDetails = async () => {
   isLoading.value = true
   error.value = null
 
-  const result = await tournamentStore.fetchTournamentDetails(tournamentId)
+  console.log('Loading tournament with ID:', tournamentIdValue)
+  const result = await tournamentStore.fetchTournamentDetails(tournamentIdValue)
 
   if (!result.success) {
     error.value = result.message || 'خطا در بارگذاری جزئیات تورنومنت'
@@ -410,13 +423,13 @@ const loadTournamentDetails = async () => {
 
 const loadParticipants = async () => {
   loadingParticipants.value = true
-  await tournamentStore.fetchParticipants(tournamentId)
+  await tournamentStore.fetchParticipants(tournamentIdValue)
   loadingParticipants.value = false
 }
 
 const loadRankings = async () => {
   loadingRankings.value = true
-  await tournamentStore.fetchRankings(tournamentId)
+  await tournamentStore.fetchRankings(tournamentIdValue)
   loadingRankings.value = false
 }
 
@@ -428,7 +441,7 @@ const handleJoinTournament = async () => {
 
   joiningTournament.value = true
 
-  const result = await tournamentStore.joinTournament(tournamentId)
+  const result = await tournamentStore.joinTournament(tournamentIdValue)
 
   if (result.success) {
     alert('✅ ' + result.message)
