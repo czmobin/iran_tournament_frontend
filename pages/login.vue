@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 flex items-center justify-center p-4">
+  <div class="min-h-screen bg-cover bg-center bg-no-repeat bg-fixed mobile-bg md:desktop-bg flex items-center justify-center p-4">
     <div class="max-w-md w-full">
       <!-- Logo & Title -->
       <div class="text-center mb-6 md:mb-8">
@@ -175,3 +175,15 @@ useHead({
   ]
 })
 </script>
+
+<style scoped>
+.mobile-bg {
+  background-image: url('/mobile_index.png');
+}
+
+@media (min-width: 768px) {
+  .desktop-bg {
+    background-image: url('/desktop_index.png');
+  }
+}
+</style>
