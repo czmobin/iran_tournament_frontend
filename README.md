@@ -78,33 +78,57 @@ npm run preview
 
 ## 🌐 دیپلوی روی سرور
 
-برای دیپلوی پروژه روی سرور، راهنمای کامل به زبان فارسی در فایل **[DEPLOY.md](./DEPLOY.md)** موجود است.
+### 🚀 دیپلوی خودکار با CI/CD ⭐ (توصیه می‌شود)
 
-### روش‌های دیپلوی پشتیبانی شده:
+پروژه دارای سیستم CI/CD کامل است که **هر merge به main را خودکار روی سرور دیپلوی می‌کند**.
 
-- 🐳 **Docker** (توصیه می‌شود)
-- 🔄 **PM2** (برای VPS)
-- 📦 **Static Generation** (برای هاست استاتیک)
-
-### دیپلوی سریع با Docker
+**ویژگی‌ها:**
+- ✅ دیپلوی خودکار با GitHub Actions
+- ✅ مدیریت هوشمند فضای Docker (فقط 2 image آخر نگه داشته می‌شود)
+- ✅ Backup خودکار قبل از deployment
+- ✅ Health check و monitoring
+- ✅ Zero downtime deployment
 
 ```bash
-cp .env.example .env
-# تنظیم API_BASE_URL در فایل .env
+# تنظیم (فقط یکبار):
+# 1. اضافه کردن GitHub Secrets (SERVER_HOST, SSH_PRIVATE_KEY, ...)
+# 2. کلون پروژه روی سرور
+# 3. تنظیم .env روی سرور
+
+# استفاده:
+git push origin main  # ← خودکار دیپلوی می‌شود! 🚀
+```
+
+📖 راهنمای کامل CI/CD: **[CI-CD-SETUP.md](./CI-CD-SETUP.md)**
+
+---
+
+### روش‌های دیپلوی دستی:
+
+#### 🐳 Docker
+```bash
+cp .env.example .env && nano .env
 docker-compose up -d
 ```
 
-### دیپلوی سریع با PM2
-
+#### 🔄 PM2
 ```bash
-npm install
-npm run build
-cp .env.example .env
-# تنظیم API_BASE_URL در فایل .env
+npm install && npm run build
+cp .env.example .env && nano .env
 pm2 start ecosystem.config.cjs
 ```
 
-📖 برای جزئیات بیشتر، حتماً فایل [DEPLOY.md](./DEPLOY.md) را مطالعه کنید.
+#### 🧹 پاکسازی خودکار Docker
+```bash
+# اجرای اسکریپت cleanup (جلوگیری از پر شدن دیسک)
+./docker-cleanup.sh
+
+# یا تنظیم cron برای اجرای روزانه:
+crontab -e
+# اضافه کنید: 0 2 * * * /path/to/docker-cleanup.sh
+```
+
+📖 راهنمای کامل دیپلوی: **[DEPLOY.md](./DEPLOY.md)** | **[QUICKSTART.md](./QUICKSTART.md)**
 
 ## 📁 ساختار پروژه
 
