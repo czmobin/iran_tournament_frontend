@@ -38,8 +38,8 @@
         <!-- Cover Image -->
         <div class="h-48 md:h-64 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 relative">
           <img
-            v-if="tournament.cover_image"
-            :src="tournament.cover_image"
+            v-if="coverImageUrl"
+            :src="coverImageUrl"
             :alt="tournament.title"
             class="w-full h-full object-cover"
           />
@@ -336,6 +336,7 @@ definePageMeta({
 const route = useRoute()
 const tournamentStore = useTournamentStore()
 const authStore = useAuthStore()
+const { getMediaUrl } = useMedia()
 
 // Decode URL parameter to handle Persian slugs correctly
 const tournamentId = computed(() => {
@@ -369,6 +370,11 @@ const tabs = [
 const tournament = computed(() => tournamentStore.currentTournament)
 const participants = computed(() => tournamentStore.participants)
 const rankings = computed(() => tournamentStore.rankings)
+
+const coverImageUrl = computed(() => {
+  if (!tournament.value) return null
+  return getMediaUrl(tournament.value.cover_image)
+})
 
 const isFull = computed(() => {
   if (!tournament.value) return false
