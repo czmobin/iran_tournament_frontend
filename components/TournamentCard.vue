@@ -7,8 +7,8 @@
     <div class="h-32 md:h-40 bg-gradient-to-r from-purple-500 to-pink-500 relative">
       <!-- Cover Image if available -->
       <img
-        v-if="tournament.cover_image"
-        :src="tournament.cover_image"
+        v-if="coverImageUrl"
+        :src="coverImageUrl"
         :alt="tournament.title"
         class="w-full h-full object-cover"
       />
@@ -101,8 +101,14 @@ const props = defineProps<{
   tournament: Tournament
 }>()
 
+const { getMediaUrl } = useMedia()
+
 const participantsPercent = computed(() => {
   return (props.tournament.current_participants / props.tournament.max_participants) * 100
+})
+
+const coverImageUrl = computed(() => {
+  return getMediaUrl(props.tournament.cover_image)
 })
 
 const isFull = computed(() => {
