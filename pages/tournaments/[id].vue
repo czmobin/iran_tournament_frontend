@@ -81,9 +81,9 @@
 
             <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl md:rounded-2xl p-3 md:p-4 text-center border border-blue-200">
               <div class="text-lg md:text-2xl font-black text-blue-600 mb-1">
-                {{ tournament.current_participants }} / {{ tournament.max_participants }}
+                {{ tournament.max_participants }}
               </div>
-              <div class="text-xs md:text-sm text-gray-600">👥 شرکت‌کنندگان</div>
+              <div class="text-xs md:text-sm text-gray-600">👥 ظرفیت</div>
             </div>
 
             <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl md:rounded-2xl p-3 md:p-4 text-center border border-yellow-200">
@@ -356,7 +356,7 @@ const tournamentIdValue = tournamentId.value
 
 const isLoading = ref(true)
 const error = ref<string | null>(null)
-const activeTab = ref('rules')
+const activeTab = ref('description')
 const loadingParticipants = ref(false)
 const loadingRankings = ref(false)
 const joiningTournament = ref(false)
