@@ -42,6 +42,8 @@
             :src="coverImageUrl"
             :alt="tournament.title"
             class="w-full h-full object-cover"
+            @error="onImageError"
+            @load="onImageLoad"
           />
 
           <!-- Status Badge -->
@@ -373,8 +375,20 @@ const rankings = computed(() => tournamentStore.rankings)
 
 const coverImageUrl = computed(() => {
   if (!tournament.value) return null
-  return getMediaUrl(tournament.value.cover_image)
+  console.log('🎴 Tournament Detail - Raw cover_image:', tournament.value.cover_image)
+  const url = getMediaUrl(tournament.value.cover_image)
+  console.log('🎴 Tournament Detail - Final URL:', url)
+  return url
 })
+
+const onImageError = (event: Event) => {
+  console.error('❌ Tournament detail image load FAILED for:', coverImageUrl.value)
+  console.error('❌ Error event:', event)
+}
+
+const onImageLoad = () => {
+  console.log('✅ Tournament detail image loaded successfully:', coverImageUrl.value)
+}
 
 const isFull = computed(() => {
   if (!tournament.value) return false
