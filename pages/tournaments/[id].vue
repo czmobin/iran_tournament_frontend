@@ -132,7 +132,7 @@
             :key="tab.id"
             @click="activeTab = tab.id"
             :class="[
-              'flex-shrink-0 px-4 md:px-6 py-3 md:py-4 font-bold transition-all text-sm md:text-base',
+              'flex-shrink-0 px-4 md:px-6 py-3 md:py-4 font-bold transition-all text-sm md:text-base whitespace-nowrap',
               activeTab === tab.id
                 ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
                 : 'text-gray-600 hover:bg-gray-100 active:bg-gray-200'
@@ -361,13 +361,13 @@ const loadingParticipants = ref(false)
 const loadingRankings = ref(false)
 const joiningTournament = ref(false)
 
-const tabs = [
+const tabs = computed(() => [
   { id: 'description', label: 'توضیحات', icon: '📋' },
   { id: 'rules', label: 'قوانین', icon: '⚖️' },
-  { id: 'participants', label: 'شرکت‌کنندگان', icon: '👥' },
+  { id: 'participants', label: `شرکت‌کنندگان (${participants.value.length})`, icon: '👥' },
   { id: 'rankings', label: 'رنکینگ', icon: '🏆' },
   { id: 'chat', label: 'چت', icon: '💬' }
-]
+])
 
 const tournament = computed(() => tournamentStore.currentTournament)
 const participants = computed(() => tournamentStore.participants)
@@ -424,7 +424,13 @@ const formatPrice = (price: number) => {
 }
 
 const formatDate = (date: string) => {
-  return new Date(date).toLocaleDateString('fa-IR')
+  const dateObj = new Date(date)
+  const persianDate = dateObj.toLocaleDateString('fa-IR')
+  const persianTime = dateObj.toLocaleTimeString('fa-IR', {
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+  return `${persianDate} - ${persianTime}`
 }
 
 const loadTournamentDetails = async () => {
