@@ -122,6 +122,10 @@ export const useTournamentStore = defineStore('tournament', {
         }
 
         const response = await apiFetch(url)
+        console.log('📋 Tournaments list response:', response)
+        if (response.results && response.results.length > 0) {
+          console.log('🖼️ First tournament cover_image:', response.results[0].cover_image)
+        }
         this.tournaments = response.results || response
 
         return { success: true }
@@ -147,6 +151,8 @@ export const useTournamentStore = defineStore('tournament', {
 
         console.log('Fetching tournament details:', { id, encodedId })
         const response = await apiFetch(`/tournaments/${encodedId}/`)
+        console.log('📦 Tournament response:', response)
+        console.log('🖼️ Cover image URL from API:', response.cover_image)
         this.currentTournament = response
 
         return { success: true, data: response }

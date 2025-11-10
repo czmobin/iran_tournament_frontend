@@ -24,6 +24,7 @@ export const useMedia = () => {
 
     // If already an absolute URL, return as-is
     if (mediaUrl.startsWith('http://') || mediaUrl.startsWith('https://')) {
+      console.log('✅ Using absolute URL:', mediaUrl)
       return mediaUrl
     }
 
@@ -31,7 +32,9 @@ export const useMedia = () => {
     const backendUrl = getBackendUrl()
     // Ensure no double slashes
     const cleanUrl = mediaUrl.startsWith('/') ? mediaUrl : `/${mediaUrl}`
-    return `${backendUrl}${cleanUrl}`
+    const fullUrl = `${backendUrl}${cleanUrl}`
+    console.log('🔧 Converted relative URL:', mediaUrl, '→', fullUrl)
+    return fullUrl
   }
 
   return {
