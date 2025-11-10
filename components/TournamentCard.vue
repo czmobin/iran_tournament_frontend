@@ -11,6 +11,8 @@
         :src="coverImageUrl"
         :alt="tournament.title"
         class="w-full h-full object-cover"
+        @error="onImageError"
+        @load="onImageLoad"
       />
 
       <!-- Status Badge -->
@@ -108,8 +110,21 @@ const participantsPercent = computed(() => {
 })
 
 const coverImageUrl = computed(() => {
-  return getMediaUrl(props.tournament.cover_image)
+  console.log('🎴 TournamentCard - Raw cover_image:', props.tournament.cover_image)
+  console.log('🎴 TournamentCard - Tournament:', props.tournament.title)
+  const url = getMediaUrl(props.tournament.cover_image)
+  console.log('🎴 TournamentCard - Final URL:', url)
+  return url
 })
+
+const onImageError = (event: Event) => {
+  console.error('❌ Image load FAILED for:', coverImageUrl.value)
+  console.error('❌ Error event:', event)
+}
+
+const onImageLoad = () => {
+  console.log('✅ Image loaded successfully:', coverImageUrl.value)
+}
 
 const isFull = computed(() => {
   return props.tournament.current_participants >= props.tournament.max_participants
