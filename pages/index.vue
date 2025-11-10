@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-purple-600 to-blue-600">
+  <div class="min-h-screen">
 
     <!-- Hero Section - Responsive -->
     <main class="container mx-auto px-4 py-12 md:py-16 lg:py-20 text-center">
