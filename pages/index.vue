@@ -13,6 +13,12 @@
 
       <!-- Buttons - Responsive -->
       <div class="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center px-4">
+        <button
+          @click="showLearnMore = true"
+          class="bg-white/20 backdrop-blur text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg hover:bg-white/30 transition border-2 border-white/50"
+        >
+          بیشتر بدانید
+        </button>
         <NuxtLink
           to="/tournaments"
           class="bg-yellow-400 text-purple-900 px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg hover:bg-yellow-300 transition transform hover:scale-105"
@@ -20,12 +26,6 @@
           شروع کنید 🚀
         </NuxtLink>
 
-        <button
-          @click="showLearnMore = true"
-          class="bg-white/20 backdrop-blur text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg hover:bg-white/30 transition border-2 border-white/50"
-        >
-          بیشتر بدانید
-        </button>
       </div>
 
       <!-- Stats - Responsive Grid -->
@@ -55,20 +55,6 @@
         @click.self="showLearnMore = false"
       >
         <div class="bg-gradient-to-br from-purple-600 to-blue-600 rounded-3xl p-6 md:p-10 border border-white/20 max-w-5xl w-full max-h-[90vh] overflow-y-auto">
-          <!-- Close Button -->
-          <div class="flex justify-between items-center mb-6 sticky top-0 bg-gradient-to-br from-purple-600 to-blue-600 pb-4">
-            <h3 class="text-2xl md:text-3xl font-black text-white">
-              درباره ایران تورنومنت
-            </h3>
-            <button
-              @click="showLearnMore = false"
-              class="text-white/80 hover:text-white transition p-2 hover:bg-white/10 rounded-lg"
-            >
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
 
           <!-- Content Grid -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
@@ -125,16 +111,6 @@
             </div>
           </div>
 
-          <!-- Call to Action -->
-          <div class="mt-8 text-center">
-            <NuxtLink
-              to="/tournaments"
-              class="inline-block bg-yellow-400 text-purple-900 px-8 py-4 rounded-xl font-bold text-lg hover:bg-yellow-300 transition transform hover:scale-105"
-              @click="showLearnMore = false"
-            >
-              همین حالا شروع کن! 🚀
-            </NuxtLink>
-          </div>
         </div>
       </div>
     </Transition>
