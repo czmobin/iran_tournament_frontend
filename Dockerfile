@@ -1,5 +1,5 @@
 # مرحله اول: Build
-FROM registry.docker.ir/library/node:20-alpine AS builder
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
@@ -16,7 +16,7 @@ COPY . .
 RUN npm run build
 
 # مرحله دوم: Production
-FROM registry.docker.ir/library/node:20-alpine
+FROM node:20-alpine
 
 # نصب ابزارهای لازم برای healthcheck و debugging
 RUN apk add --no-cache wget curl
