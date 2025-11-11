@@ -78,33 +78,68 @@ npm run preview
 
 ## 🌐 دیپلوی روی سرور
 
-برای دیپلوی پروژه روی سرور، راهنمای کامل به زبان فارسی در فایل **[DEPLOY.md](./DEPLOY.md)** موجود است.
+### 🚀 دیپلوی خودکار با CI/CD ⭐ (توصیه می‌شود)
 
-### روش‌های دیپلوی پشتیبانی شده:
+پروژه دارای سیستم CI/CD کامل است که **هر merge به main را خودکار روی سرور دیپلوی می‌کند**.
 
-- 🐳 **Docker** (توصیه می‌شود)
-- 🔄 **PM2** (برای VPS)
-- 📦 **Static Generation** (برای هاست استاتیک)
-
-### دیپلوی سریع با Docker
+**ویژگی‌ها:**
+- ✅ دیپلوی خودکار با GitHub Actions
+- ✅ اجرا با Screen session (پایدار و قابل مدیریت)
+- ✅ Backup خودکار قبل از deployment
+- ✅ Health check و monitoring
+- ✅ اتصال مستقیم به بکند روی پورت 8020
 
 ```bash
-cp .env.example .env
-# تنظیم API_BASE_URL در فایل .env
-docker-compose up -d
+# تنظیم (فقط یکبار):
+# 1. اضافه کردن GitHub Secrets (SERVER_HOST, SSH_PRIVATE_KEY, ...)
+# 2. کلون پروژه روی سرور
+# 3. تنظیم .env روی سرور (API_BASE_URL=http://localhost:8020/api)
+
+# استفاده:
+git push origin main  # ← خودکار دیپلوی می‌شود! 🚀
 ```
 
-### دیپلوی سریع با PM2
+📖 راهنمای کامل CI/CD: **[CI-CD-SETUP.md](./CI-CD-SETUP.md)**
 
+---
+
+### روش‌های دیپلوی دستی:
+
+#### 📱 Screen (توصیه می‌شود)
 ```bash
-npm install
-npm run build
+npm install && npm run build
 cp .env.example .env
-# تنظیم API_BASE_URL در فایل .env
+# API_BASE_URL=http://localhost:8020/api
+./screen-manager.sh start
+
+# مدیریت:
+./screen-manager.sh status   # وضعیت
+./screen-manager.sh logs     # لاگ‌ها
+./screen-manager.sh restart  # ری‌استارت
+screen -r iran-tournament-frontend  # اتصال
+```
+
+#### 🔄 PM2
+```bash
+npm install && npm run build
+cp .env.example .env
 pm2 start ecosystem.config.cjs
+pm2 save && pm2 startup
 ```
 
-📖 برای جزئیات بیشتر، حتماً فایل [DEPLOY.md](./DEPLOY.md) را مطالعه کنید.
+#### 📊 مانیتورینگ
+```bash
+# Screen
+./screen-manager.sh status
+./screen-manager.sh logs
+
+# PM2
+pm2 status
+pm2 logs iran-tournament-frontend
+pm2 monit
+```
+
+📖 راهنمای کامل دیپلوی: **[DEPLOY.md](./DEPLOY.md)** | **[QUICKSTART.md](./QUICKSTART.md)**
 
 ## 📁 ساختار پروژه
 

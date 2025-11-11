@@ -157,7 +157,7 @@ chmod 700 ~/.ssh
 | `SERVER_USERNAME` | `user` | نام کاربری SSH |
 | `SSH_PRIVATE_KEY` | محتوای `~/.ssh/github_actions` | کل محتوای private key |
 | `SERVER_PORT` | `22` | پورت SSH (پیش‌فرض 22) |
-| `PROJECT_PATH` | `/home/user/iran_tournament_frontend` | مسیر پروژه روی سرور |
+| `PROJECT_PATH` | `/home/archive/iran_tournament_frontend` | مسیر پروژه روی سرور |
 
 ### مرحله 4: تست اتصال SSH
 
@@ -215,8 +215,8 @@ git push origin main
 # ویرایش crontab
 crontab -e
 
-# اضافه کردن این خط (هر روز ساعت 2 صبح)
-0 2 * * * /home/user/iran_tournament_frontend/docker-cleanup.sh >> /var/log/docker-cleanup.log 2>&1
+# اضافه کردن این خط (هر روز ساعت 2 صبح) - پاکسازی لاگ‌های قدیمی
+0 2 * * * find /home/archive/iran_tournament_frontend/logs -name "*.log" -type f -mtime +7 -delete
 ```
 
 ### مانیتورینگ وضعیت
@@ -267,14 +267,17 @@ du -sh /var/lib/docker
 ```bash
 # بررسی لاگ‌های سرور
 ssh user@server
-cd /home/user/iran_tournament_frontend
-docker logs iran-tournament-frontend
+cd /home/archive/iran_tournament_frontend
+./screen-manager.sh logs
+
+# یا مشاهده مستقیم لاگ
+tail -f logs/app.log
 
 # بررسی فضای دیسک
 df -h
 
-# cleanup دستی
-./docker-cleanup.sh
+# بررسی وضعیت screen
+./screen-manager.sh status
 ```
 
 ### مشکل 2: SSH Connection Failed

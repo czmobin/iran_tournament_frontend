@@ -28,7 +28,7 @@ jobs:
             echo "🚀 Starting deployment process..."
 
             # رفتن به پوشه پروژه
-            cd ${{ secrets.PROJECT_PATH || '/home/user/iran_tournament_frontend' }}
+            cd ${{ secrets.PROJECT_PATH || '/home/archive/iran_tournament_frontend' }}
 
             # دریافت آخرین تغییرات
             echo "📥 Pulling latest changes..."
@@ -37,7 +37,7 @@ jobs:
 
             # اجرای اسکریپت دیپلوی
             echo "🔄 Running deployment script..."
-            chmod +x ./deploy-production.sh
+            chmod +x ./deploy-production.sh ./screen-manager.sh
             ./deploy-production.sh
 
             echo "✅ Deployment completed successfully!"
