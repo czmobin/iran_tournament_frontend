@@ -110,12 +110,29 @@ iran_tournament_frontend/
 فایل `.env` را ایجاد کنید و متغیرهای زیر را تنظیم کنید:
 
 ```env
-# آدرس API بکند
-API_BASE_URL=http://localhost:8000/api
+# آدرس API بکند (روی همین سرور - پورت 8020)
+API_BASE_URL=http://localhost:8020/api
+
+# پورت اپلیکیشن فرانت‌اند
+PORT=3020
 
 # محیط اجرا
 NODE_ENV=production
 ```
+
+## 🔗 اتصال به بکند Django
+
+اگه بکند روی همین سرور با Django اجرا می‌شه، باید CORS رو تنظیم کنی.
+
+📖 **راهنمای کامل:** [DJANGO_SETUP.md](./DJANGO_SETUP.md)
+
+خلاصه:
+1. نصب: `pip install django-cors-headers`
+2. اضافه کردن به `INSTALLED_APPS` و `MIDDLEWARE`
+3. تنظیم `CORS_ALLOWED_ORIGINS` برای پورت 3020
+4. ری‌استارت بکند
+
+
 
 ## 🤝 مشارکت
 
