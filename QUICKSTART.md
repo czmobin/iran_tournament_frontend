@@ -1,64 +1,56 @@
 # ⚡ Quick Start Guide
 
-راهنمای سریع برای راه‌اندازی پروژه در کمتر از 5 دقیقه!
+راهنمای سریع برای راه‌اندازی پروژه
 
 ---
 
-## 🎯 دیپلوی خودکار با CI/CD ⭐ (توصیه می‌شود)
+## 🎯 دیپلوی خودکار با CI/CD
 
-**مزایا:** دیپلوی خودکار با PM2، مدیریت هوشمند، rollback safety
+**کد خودکار build می‌شه، اجرا دستی**
 
 ```bash
-# 1. روی سرور: نصب Node.js
+# 1. روی سرور: نصب Node.js و PM2
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt-get install -y nodejs
-
-# 2. نصب PM2
 npm install -g pm2
 
-# 3. کلون پروژه در /home/archive
+# 2. کلون پروژه در /home/archive
 cd /home/archive
 git clone <repo-url>
 cd iran_tournament_frontend
 
-# 4. تنظیم environment (API روی همین سرور - پورت 8020)
+# 3. تنظیم environment
 cp .env.example .env
 # API_BASE_URL=http://localhost:8020/api (پیش‌فرض)
 
-# 5. تنظیم GitHub Secrets (فقط یکبار)
+# 4. تنظیم GitHub Secrets (فقط یکبار)
 # SERVER_HOST, SERVER_USERNAME, SSH_PRIVATE_KEY, PROJECT_PATH
 
-# 6. هر Push به main = دیپلوی خودکار! ✨
+# 5. هر Push به main = کد build میشه! ✨
+# بعد دستی اجرا کن: pm2 restart iran-tournament-frontend
 ```
-
-📖 راهنمای کامل: [CI-CD-SETUP.md](./CI-CD-SETUP.md)
 
 ---
 
 ## 🚀 دیپلوی دستی
 
-### روش 1️⃣: استفاده از اسکریپت دیپلوی (توصیه می‌شود)
+### استفاده از اسکریپت:
 
 ```bash
-# کلون و تنظیم
-cd /home/archive
-git clone <repo-url>
-cd iran_tournament_frontend
-cp .env.example .env
+cd /home/archive/iran_tournament_frontend
 
-# دیپلوی (همه چیز خودکار)
-chmod +x deploy-production.sh
+# Build کد
 ./deploy-production.sh
 
-# ✅ Done! -> http://localhost:3000
+# اجرا (دستی)
+pm2 start ecosystem.config.cjs
+# یا اگه قبلاً اجرا شده:
+pm2 restart iran-tournament-frontend
 ```
 
-### روش 2️⃣: دیپلوی قدم به قدم
+### قدم به قدم:
 
 ```bash
-# نصب PM2 (اگر نیست)
-npm install -g pm2
-
 # نصب و build
 npm install
 npm run build
@@ -66,19 +58,18 @@ npm run build
 # تنظیم .env
 cp .env.example .env
 
-# شروع با PM2
+# اجرا
 pm2 start ecosystem.config.cjs
 pm2 save
-pm2 startup  # برای شروع خودکار بعد از reboot
+pm2 startup
 ```
 
 ---
 
-## 🔧 تنظیمات اولیه
+## 🔧 تنظیمات
 
 ### فایل `.env`:
 ```env
-# بکند روی همین سرور - پورت 8020
 API_BASE_URL=http://localhost:8020/api
 PORT=3000
 NODE_ENV=production
@@ -88,25 +79,21 @@ NODE_ENV=production
 
 ## 📊 مدیریت با PM2
 
-### دستورات اصلی:
-
 ```bash
+# شروع
+pm2 start ecosystem.config.cjs
+
 # وضعیت
 pm2 status
-pm2 list
 
-# لاگ‌ها (real-time)
+# لاگ
 pm2 logs iran-tournament-frontend
-pm2 logs iran-tournament-frontend --lines 100
 
 # ری‌استارت
 pm2 restart iran-tournament-frontend
 
 # توقف
 pm2 stop iran-tournament-frontend
-
-# شروع مجدد
-pm2 start iran-tournament-frontend
 
 # حذف
 pm2 delete iran-tournament-frontend
@@ -115,112 +102,60 @@ pm2 delete iran-tournament-frontend
 pm2 monit
 ```
 
-### بروزرسانی:
+---
+
+## 🔄 بروزرسانی
 
 ```bash
-# با CI/CD
-git push origin main  # خودکار دیپلوی می‌شود!
-
-# دستی
+# کد جدید push شد؟ (با CI/CD خودکار build میشه)
 cd /home/archive/iran_tournament_frontend
-git pull origin main
+git pull
+
+# ری‌استارت
+pm2 restart iran-tournament-frontend
+
+# یا build دستی
 ./deploy-production.sh
-```
-
----
-
-## 📚 مستندات کامل
-
-| فایل | محتوا |
-|------|-------|
-| [README.md](./README.md) | معرفی پروژه و ویژگی‌ها |
-| [DEPLOY.md](./DEPLOY.md) | راهنمای کامل دیپلوی |
-| [CI-CD-SETUP.md](./CI-CD-SETUP.md) | راه‌اندازی CI/CD خودکار |
-| **QUICKSTART.md** | همین راهنمای سریع! |
-
----
-
-## ❓ مشکل دارید؟
-
-### Application شروع نمی‌شود:
-```bash
-# بررسی وضعیت PM2
-pm2 status
-
-# مشاهده لاگ
-pm2 logs iran-tournament-frontend --lines 50
-
-# بررسی خطاها
-pm2 logs iran-tournament-frontend --err --lines 50
-```
-
-### پورت 3000 گرفته است:
-```bash
-# پیدا کردن پروسه
-sudo lsof -i :3000
-
-# یا ری‌استارت PM2
 pm2 restart iran-tournament-frontend
 ```
 
-### اتصال به بکند برقرار نیست:
+---
+
+## ❓ مشکلات رایج
+
+### Application شروع نمی‌شود:
 ```bash
-# بررسی بکند روی پورت 8020
-curl http://localhost:8020/api
-
-# بررسی فایل .env
-cat .env | grep API_BASE_URL
-
-# بررسی متغیرهای محیطی PM2
-pm2 env iran-tournament-frontend
+pm2 status
+pm2 logs iran-tournament-frontend --lines 50
 ```
 
-### PM2 بعد از reboot شروع نمی‌شود:
+### پورت گرفته:
 ```bash
-# یکبار این رو اجرا کن:
-pm2 startup
-pm2 save
+sudo lsof -i :3000
+pm2 restart iran-tournament-frontend
+```
+
+### اتصال به بکند:
+```bash
+curl http://localhost:8020/api
+cat .env | grep API_BASE_URL
 ```
 
 ---
 
-## 🎉 انجام شد!
+## 🎉 نتیجه
 
 - 🌐 Frontend: `http://localhost:3000`
-- 🔌 Backend API: `http://localhost:8020/api`
+- 🔌 Backend: `http://localhost:8020/api`
 - 📊 لاگ‌ها: `pm2 logs iran-tournament-frontend`
-- 🔄 بروزرسانی: `git pull` (با CI/CD خودکار!)
-- 📈 مانیتورینگ: `pm2 monit`
+- 🔄 بروزرسانی: `git pull` → `pm2 restart`
 
 ---
 
-## 🔍 نکات مهم:
+## 💡 نکات
 
-1. **Backend باید روی پورت 8020 در حال اجرا باشد**
-2. **PM2 به صورت daemon در background اجرا می‌شود**
-3. **لاگ‌ها در `logs/pm2-*.log` ذخیره می‌شوند**
-4. **Backup ها در `backups/` قرار می‌گیرند**
-5. **PM2 auto-restart دارد (اگر crash کرد، خودش دوباره میاره بالا)**
-
----
-
-## 💡 مزایای PM2:
-
-✅ **مدیریت پروسه حرفه‌ای**
-✅ **Auto-restart در صورت crash**
-✅ **لاگ‌گذاری خودکار**
-✅ **مانیتورینگ real-time**
-✅ **کم‌ترین overhead**
-✅ **Cluster mode support**
-✅ **شروع خودکار بعد از reboot**
-
----
-
-<div align="center">
-
-**Need help?** Check the full guides:
-[DEPLOY.md](./DEPLOY.md) | [CI-CD-SETUP.md](./CI-CD-SETUP.md)
-
-**🎮 Connected to Backend on Port 8020**
-
-</div>
+1. **CI/CD فقط build می‌کنه** - اجرا دستی
+2. **Backend روی پورت 8020** باید اجرا باشه
+3. **PM2 auto-restart** داره
+4. **لاگ‌ها:** `logs/pm2-*.log`
+5. **Backup ها:** `backups/`
