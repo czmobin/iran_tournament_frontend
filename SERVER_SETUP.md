@@ -71,11 +71,18 @@ npm install
 
 ### 6️⃣ Build مجدد پروژه ⚠️ مهم
 
+**نکته مهم:** Nuxt در زمان build فایل `.env` رو می‌خونه، پس باید environment variable رو قبل از build set کنی:
+
 ```bash
+# روش 1: Export کردن قبل از build (توصیه می‌شود)
+export API_BASE_URL="http://185.204.197.167:8020/api"
 npm run build
+
+# روش 2: inline با build command
+API_BASE_URL="http://185.204.197.167:8020/api" npm run build
 ```
 
-این مرحله **حتماً** باید انجام بشه.
+این مرحله **حتماً** باید انجام بشه و با environment variable صحیح.
 
 ### 7️⃣ اجرای اپلیکیشن
 

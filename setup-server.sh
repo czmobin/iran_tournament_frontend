@@ -75,9 +75,15 @@ echo -e "${BLUE}📦 نصب dependencies...${NC}"
 npm install
 echo ""
 
-# Build
+# Build با environment variable
 echo -e "${BLUE}🔨 در حال build پروژه...${NC}"
 echo -e "${YELLOW}⏳ این کار ممکنه چند دقیقه طول بکشه...${NC}"
+
+# Export کردن متغیرها قبل از build
+export API_BASE_URL="http://${SERVER_IP}:8020/api"
+export PORT=3020
+export NODE_ENV=production
+
 npm run build
 echo ""
 
