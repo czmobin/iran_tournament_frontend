@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ################################################################################
-# اسکریپت دیپلوی Production با Screen
+# اسکریپت دیپلوی Production با PM2
 # این اسکریپت به صورت خودکار توسط GitHub Actions اجرا می‌شود
 ################################################################################
 
@@ -17,7 +17,6 @@ NC='\033[0m' # No Color
 # تنظیمات
 APP_NAME="iran-tournament-frontend"
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SCREEN_NAME="iran-tournament-frontend"
 LOG_DIR="$APP_DIR/logs"
 BACKUP_DIR="$APP_DIR/backups"
 
@@ -55,18 +54,10 @@ if ! command -v npm &> /dev/null; then
     log_error "npm نصب نیست!"
 fi
 
-if ! command -v screen &> /dev/null; then
-    log_warning "screen نصب نیست! در حال نصب..."
-    export DEBIAN_FRONTEND=noninteractive
-    sudo apt-get update -qq && sudo apt-get install -y screen || {
-        log_error "نصب screen ناموفق بود! لطفاً دستی نصب کنید: sudo apt-get install screen"
-    }
-
-    # بررسی نصب موفق
-    if ! command -v screen &> /dev/null; then
-        log_error "screen نصب نشد! لطفاً دستی نصب کنید."
-    fi
-    log_success "screen با موفقیت نصب شد"
+if ! command -v pm2 &> /dev/null; then
+    log_warning "PM2 نصب نیست! در حال نصب..."
+    npm install -g pm2 || log_error "نصب PM2 ناموفق بود! لطفاً دستی نصب کنید: npm install -g pm2"
+    log_success "PM2 با موفقیت نصب شد"
 fi
 
 # ایجاد دایرکتوری‌های لازم
@@ -132,100 +123,50 @@ if [ ! -f "$APP_DIR/.env" ]; then
     fi
 fi
 
-# ۷. توقف application قبلی (اگر در حال اجراست)
-log_info "بررسی application قبلی..."
-if screen -list | grep -q "$SCREEN_NAME"; then
-    log_info "توقف application قبلی..."
-    screen -S "$SCREEN_NAME" -X quit || true
-    sleep 3
-    log_success "Application قبلی متوقف شد"
-fi
-
-# بررسی اینکه پورت 3000 آزاد باشد
-if lsof -i :3000 &> /dev/null; then
-    log_warning "پورت 3000 هنوز در حال استفاده است!"
-    log_info "در حال kill کردن پروسه..."
-    lsof -ti :3000 | xargs -r kill -9 2>/dev/null || true
-    sleep 2
-fi
-
-# ۸. شروع application جدید
-log_info "شروع application جدید در screen session..."
-
 # بارگذاری متغیرهای محیطی
-export NODE_ENV=production
 if [ -f "$APP_DIR/.env" ]; then
     export $(cat "$APP_DIR/.env" | grep -v '^#' | grep -v '^$' | xargs)
 fi
 
-# بررسی screen قبل از استفاده
-log_info "بررسی screen..."
-screen -v || log_error "screen به درستی نصب نشده است!"
+# ۷. مدیریت PM2
+log_info "مدیریت PM2 process..."
 
-# شروع screen session
-log_info "ایجاد screen session با نام: $SCREEN_NAME"
-screen -dmS "$SCREEN_NAME" bash -c "
-    cd '$APP_DIR'
-    export NODE_ENV=production
-    export PORT=\${PORT:-3000}
-    export NUXT_PUBLIC_API_BASE=\${API_BASE_URL:-http://localhost:8020/api}
+# بررسی اگر قبلاً اجرا شده
+if pm2 describe iran-tournament-frontend &> /dev/null; then
+    log_info "ری‌استارت application با PM2..."
+    pm2 restart iran-tournament-frontend --update-env || log_error "خطا در ری‌استارت PM2"
+    log_success "Application ری‌استارت شد"
+else
+    log_info "شروع application با PM2..."
+    pm2 start ecosystem.config.cjs || log_error "خطا در شروع PM2"
+    log_success "Application شروع شد"
+fi
 
-    echo '═══════════════════════════════════════════════════════'
-    echo '🚀 Iran Tournament Frontend Starting...'
-    echo '═══════════════════════════════════════════════════════'
-    echo 'Time: \$(date)'
-    echo 'Deploy Tag: $DEPLOY_TAG'
-    echo 'Git Commit: $GIT_COMMIT'
-    echo 'Working Directory: \$(pwd)'
-    echo 'API URL: \$NUXT_PUBLIC_API_BASE'
-    echo 'Port: \$PORT'
-    echo '═══════════════════════════════════════════════════════'
-    echo ''
+# ذخیره تنظیمات PM2
+pm2 save
 
-    echo 'Checking output directory...'
-    ls -la .output/server/ || echo 'ERROR: .output/server not found!'
-
-    if [ -f .output/server/index.mjs ]; then
-        echo 'Starting Node.js server...'
-        node .output/server/index.mjs 2>&1 | tee -a '$LOG_DIR/app.log'
-    else
-        echo 'ERROR: .output/server/index.mjs not found!'
-        echo 'Build may have failed. Check build logs.'
-        exit 1
-    fi
-" || {
-    log_error "خطا در ایجاد screen session!"
-    log_info "خطای screen:"
-    screen -list || true
-    exit 1
-}
-
+# ۸. بررسی وضعیت
+log_info "بررسی وضعیت PM2..."
 sleep 3
 
-# ۹. بررسی موفقیت
-log_info "بررسی وضعیت application..."
+pm2 describe iran-tournament-frontend | grep -E "status|restart|uptime" || true
 
-# نمایش لیست screen sessions
-log_info "لیست screen sessions:"
-screen -list || log_warning "هیچ screen session ای وجود ندارد"
-
-if screen -list | grep -q "$SCREEN_NAME"; then
-    log_success "Screen session با موفقیت ایجاد شد"
-
-    # بررسی اینکه پورت 3000 در حال استفاده است
-    sleep 5
-    if lsof -i :3000 &> /dev/null; then
-        log_success "Application روی پورت 3000 در حال اجراست"
-    else
-        log_warning "پورت 3000 هنوز فعال نشده است، لطفاً لاگ‌ها را بررسی کنید"
-        log_info "نمایش لاگ‌های اخیر:"
-        tail -n 20 "$LOG_DIR/app.log" 2>/dev/null || echo "لاگ هنوز ایجاد نشده"
-    fi
+if pm2 describe iran-tournament-frontend | grep -q "online"; then
+    log_success "Application به صورت online در حال اجراست"
 else
-    log_error "خطا در شروع screen session!"
-    log_info "بررسی لاگ‌ها:"
-    tail -n 30 "$LOG_DIR/app.log" 2>/dev/null || echo "لاگ وجود ندارد"
-    exit 1
+    log_error "Application شروع نشد!"
+fi
+
+# ۹. بررسی پورت
+log_info "بررسی پورت 3000..."
+sleep 3
+
+if lsof -i :3000 &> /dev/null; then
+    log_success "Application روی پورت 3000 در حال اجراست"
+else
+    log_warning "پورت 3000 هنوز فعال نشده است"
+    log_info "نمایش لاگ‌های PM2:"
+    pm2 logs iran-tournament-frontend --lines 30 --nostream
 fi
 
 # ۱۰. تست سلامت
@@ -250,17 +191,13 @@ done
 
 if [ $HEALTH_CHECK_ATTEMPTS -eq $MAX_ATTEMPTS ]; then
     log_warning "⚠️  Application بعد از $MAX_ATTEMPTS تلاش پاسخ نداد"
-    log_info "لاگ‌های اخیر:"
-    tail -n 20 "$LOG_DIR/app.log"
+    log_info "لاگ‌های PM2:"
+    pm2 logs iran-tournament-frontend --lines 30 --nostream
 fi
 
 # ۱۱. پاکسازی
 log_info "پاکسازی فایل‌های موقت..."
-
-# حذف node_modules قدیمی (اختیاری)
-# پاکسازی لاگ‌های قدیمی (بیش از 7 روز)
 find "$LOG_DIR" -name "*.log" -type f -mtime +7 -delete 2>/dev/null || true
-
 log_success "پاکسازی انجام شد"
 
 # ۱۲. نمایش اطلاعات نهایی
@@ -272,7 +209,7 @@ echo ""
 log_info "🏷️  Deploy Tag: ${DEPLOY_TAG}"
 log_info "🔗 Git Commit: ${GIT_COMMIT}"
 log_info "📅 Deploy Date: ${DEPLOY_DATE}"
-log_info "📦 Screen Session: ${SCREEN_NAME}"
+log_info "📦 PM2 Process: iran-tournament-frontend"
 log_info "🌐 URL: http://localhost:3000"
 log_info "🔌 API Backend: http://localhost:8020/api"
 echo ""
@@ -280,15 +217,12 @@ echo ""
 log_success "🎉 دیپلوی با موفقیت انجام شد!"
 echo ""
 log_info "دستورات مفید:"
-echo "  • مشاهده لاگ‌ها: ./screen-manager.sh logs"
-echo "  • اتصال به session: screen -r ${SCREEN_NAME}"
-echo "  • وضعیت: ./screen-manager.sh status"
-echo "  • ری‌استارت: ./screen-manager.sh restart"
-echo "  • توقف: ./screen-manager.sh stop"
-echo "  • جدا شدن از screen: Ctrl+A ثم D"
+echo "  • مشاهده وضعیت: pm2 status"
+echo "  • مشاهده لاگ‌ها: pm2 logs iran-tournament-frontend"
+echo "  • ری‌استارت: pm2 restart iran-tournament-frontend"
+echo "  • توقف: pm2 stop iran-tournament-frontend"
+echo "  • مانیتورینگ: pm2 monit"
 echo ""
 
-# نمایش لاگ‌های اخیر
-log_info "لاگ‌های اخیر:"
-tail -n 15 "$LOG_DIR/app.log" || log_warning "لاگ هنوز ایجاد نشده"
-echo ""
+# نمایش وضعیت PM2
+pm2 list

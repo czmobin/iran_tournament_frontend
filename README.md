@@ -84,16 +84,18 @@ npm run preview
 
 **ویژگی‌ها:**
 - ✅ دیپلوی خودکار با GitHub Actions
-- ✅ اجرا با Screen session (پایدار و قابل مدیریت)
+- ✅ مدیریت پروسه با PM2 (حرفه‌ای و پایدار)
 - ✅ Backup خودکار قبل از deployment
 - ✅ Health check و monitoring
 - ✅ اتصال مستقیم به بکند روی پورت 8020
+- ✅ Auto-restart در صورت crash
 
 ```bash
 # تنظیم (فقط یکبار):
-# 1. اضافه کردن GitHub Secrets (SERVER_HOST, SSH_PRIVATE_KEY, ...)
-# 2. کلون پروژه روی سرور
-# 3. تنظیم .env روی سرور (API_BASE_URL=http://localhost:8020/api)
+# 1. نصب PM2: npm install -g pm2
+# 2. اضافه کردن GitHub Secrets (SERVER_HOST, SSH_PRIVATE_KEY, ...)
+# 3. کلون پروژه روی سرور در /home/archive
+# 4. تنظیم .env روی سرور (API_BASE_URL=http://localhost:8020/api)
 
 # استفاده:
 git push origin main  # ← خودکار دیپلوی می‌شود! 🚀
@@ -105,21 +107,13 @@ git push origin main  # ← خودکار دیپلوی می‌شود! 🚀
 
 ### روش‌های دیپلوی دستی:
 
-#### 📱 Screen (توصیه می‌شود)
+#### ⚡ اسکریپت خودکار (توصیه می‌شود)
 ```bash
-npm install && npm run build
-cp .env.example .env
-# API_BASE_URL=http://localhost:8020/api
-./screen-manager.sh start
-
-# مدیریت:
-./screen-manager.sh status   # وضعیت
-./screen-manager.sh logs     # لاگ‌ها
-./screen-manager.sh restart  # ری‌استارت
-screen -r iran-tournament-frontend  # اتصال
+# همه چیز خودکار!
+./deploy-production.sh
 ```
 
-#### 🔄 PM2
+#### 🔄 PM2 (دستی)
 ```bash
 npm install && npm run build
 cp .env.example .env
@@ -129,14 +123,10 @@ pm2 save && pm2 startup
 
 #### 📊 مانیتورینگ
 ```bash
-# Screen
-./screen-manager.sh status
-./screen-manager.sh logs
-
-# PM2
-pm2 status
-pm2 logs iran-tournament-frontend
-pm2 monit
+pm2 status                          # وضعیت
+pm2 logs iran-tournament-frontend   # لاگ‌ها
+pm2 monit                           # مانیتورینگ real-time
+pm2 restart iran-tournament-frontend # ری‌استارت
 ```
 
 📖 راهنمای کامل دیپلوی: **[DEPLOY.md](./DEPLOY.md)** | **[QUICKSTART.md](./QUICKSTART.md)**
