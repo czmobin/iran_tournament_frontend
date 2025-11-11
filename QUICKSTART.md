@@ -4,21 +4,23 @@
 
 ---
 
-## 🎯 انتخاب روش دیپلوی
+## 🎯 روش‌های دیپلوی
 
 ### گزینه 1️⃣: دیپلوی خودکار با CI/CD ⭐ (توصیه می‌شود)
 
-**مزایا:** دیپلوی خودکار، مدیریت هوشمند فضا، rollback safety
+**مزایا:** دیپلوی خودکار با Screen، مدیریت هوشمند، rollback safety
 
 ```bash
-# 1. روی سرور: نصب Docker
-curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh
+# 1. روی سرور: نصب Node.js و screen
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt-get install -y nodejs screen
 
 # 2. کلون پروژه
 git clone <repo-url> && cd iran_tournament_frontend
 
-# 3. تنظیم environment
-cp .env.example .env && nano .env
+# 3. تنظیم environment (API روی همین سرور - پورت 8020)
+cp .env.example .env
+# API_BASE_URL=http://localhost:8020/api
 
 # 4. تنظیم GitHub Secrets (فقط یکبار)
 # SERVER_HOST, SERVER_USERNAME, SSH_PRIVATE_KEY, PROJECT_PATH
@@ -30,29 +32,32 @@ cp .env.example .env && nano .env
 
 ---
 
-### گزینه 2️⃣: دیپلوی دستی با Docker
+### گزینه 2️⃣: دیپلوی دستی با Screen
 
-**مزایا:** ساده، سریع، ایزوله
+**مزایا:** ساده، مستقیم، قابل مدیریت
 
 ```bash
-# نصب Docker (اگر نیست)
-curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh
-
 # کلون و تنظیم
 git clone <repo-url> && cd iran_tournament_frontend
-cp .env.example .env && nano .env
+cp .env.example .env
+# ویرایش .env (پورت بکند: 8020)
 
-# دیپلوی
-docker-compose up -d
+# نصب و build
+npm install
+npm run build
+
+# اجرا با screen
+./screen-manager.sh start
 
 # ✅ Done! -> http://localhost:3000
+# API: http://localhost:8020/api
 ```
 
 ---
 
 ### گزینه 3️⃣: دیپلوی با PM2
 
-**مزایا:** کنترل بیشتر، مانیتورینگ آسان
+**مزایا:** مانیتورینگ، auto-restart، cluster mode
 
 ```bash
 # نصب PM2
@@ -60,8 +65,7 @@ npm install -g pm2
 
 # آماده‌سازی
 git clone <repo-url> && cd iran_tournament_frontend
-cp .env.example .env && nano .env
-npm install && npm run build
+cp .env.example .env && npm install && npm run build
 
 # اجرا
 pm2 start ecosystem.config.cjs
@@ -76,7 +80,9 @@ pm2 save && pm2 startup
 
 ### فایل `.env`:
 ```env
-API_BASE_URL=http://localhost:8000/api
+# بکند روی همین سرور - پورت 8020
+API_BASE_URL=http://localhost:8020/api
+PORT=3000
 NODE_ENV=production
 ```
 
@@ -90,27 +96,43 @@ NODE_ENV=production
 # با CI/CD
 git pull origin main  # خودکار دیپلوی می‌شود!
 
-# با Docker
-git pull && docker-compose up -d --build
+# با Screen (دستی)
+git pull
+npm install && npm run build
+./screen-manager.sh restart
 
 # با PM2
 git pull && npm install && npm run build && pm2 restart iran-tournament-frontend
 ```
 
-### مشاهده لاگ:
+### مدیریت Screen:
 
 ```bash
-# Docker
-docker logs -f iran-tournament-frontend
+# وضعیت
+./screen-manager.sh status
 
-# PM2
-pm2 logs iran-tournament-frontend
+# شروع
+./screen-manager.sh start
+
+# توقف
+./screen-manager.sh stop
+
+# ری‌استارت
+./screen-manager.sh restart
+
+# مشاهده لاگ
+./screen-manager.sh logs
+
+# اتصال به session
+./screen-manager.sh attach
+# (جدا شدن: Ctrl+A سپس D)
 ```
 
-### پاکسازی فضای Docker:
+### مشاهده لاگ با PM2:
 
 ```bash
-./docker-cleanup.sh
+pm2 logs iran-tournament-frontend
+pm2 monit
 ```
 
 ---
@@ -120,7 +142,7 @@ pm2 logs iran-tournament-frontend
 | فایل | محتوا |
 |------|-------|
 | [README.md](./README.md) | معرفی پروژه و ویژگی‌ها |
-| [DEPLOY.md](./DEPLOY.md) | راهنمای کامل دیپلوی (4 روش) |
+| [DEPLOY.md](./DEPLOY.md) | راهنمای کامل دیپلوی (3 روش) |
 | [CI-CD-SETUP.md](./CI-CD-SETUP.md) | راه‌اندازی CI/CD خودکار |
 | **QUICKSTART.md** | همین راهنمای سریع! |
 
@@ -130,9 +152,12 @@ pm2 logs iran-tournament-frontend
 
 ### Application شروع نمی‌شود:
 ```bash
-# بررسی لاگ
-docker logs iran-tournament-frontend --tail 50
+# با Screen
+./screen-manager.sh logs
 # یا
+screen -r iran-tournament-frontend
+
+# با PM2
 pm2 logs iran-tournament-frontend --lines 50
 ```
 
@@ -142,24 +167,48 @@ pm2 logs iran-tournament-frontend --lines 50
 sudo lsof -i :3000
 # کشتن پروسه
 sudo kill -9 <PID>
+
+# یا با screen-manager
+./screen-manager.sh restart
 ```
 
-### فضای دیسک پر است:
+### اتصال به بکند برقرار نیست:
 ```bash
-# پاکسازی Docker
-./docker-cleanup.sh
-# یا
-docker system prune -a --volumes -f
+# بررسی بکند روی پورت 8020
+curl http://localhost:8020/api
+
+# بررسی فایل .env
+cat .env | grep API_BASE_URL
+```
+
+### Screen session پیدا نمی‌شود:
+```bash
+# لیست همه session ها
+screen -list
+
+# شروع دوباره
+./screen-manager.sh start
 ```
 
 ---
 
 ## 🎉 انجام شد!
 
-- 🌐 Application: `http://localhost:3000` یا `http://YOUR_DOMAIN`
-- 📊 لاگ‌ها: `docker logs -f iran-tournament-frontend`
+- 🌐 Frontend: `http://localhost:3000`
+- 🔌 Backend API: `http://localhost:8020/api`
+- 📊 لاگ‌ها: `./screen-manager.sh logs`
 - 🔄 بروزرسانی: `git pull` (با CI/CD خودکار!)
-- 🧹 Cleanup: `./docker-cleanup.sh`
+- 📱 Screen Session: `screen -r iran-tournament-frontend`
+
+---
+
+## 🔍 نکات مهم:
+
+1. **Backend باید روی پورت 8020 در حال اجرا باشد**
+2. **Screen session در background اجرا می‌شود**
+3. **لاگ‌ها در `logs/app.log` ذخیره می‌شوند**
+4. **Backup ها در `backups/` قرار می‌گیرند**
+5. **برای detach از screen: Ctrl+A ثم D**
 
 ---
 
@@ -167,5 +216,7 @@ docker system prune -a --volumes -f
 
 **Need help?** Check the full guides:
 [DEPLOY.md](./DEPLOY.md) | [CI-CD-SETUP.md](./CI-CD-SETUP.md)
+
+**🎮 Connected to Backend on Port 8020**
 
 </div>

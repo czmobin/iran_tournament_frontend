@@ -84,16 +84,16 @@ npm run preview
 
 **ویژگی‌ها:**
 - ✅ دیپلوی خودکار با GitHub Actions
-- ✅ مدیریت هوشمند فضای Docker (فقط 2 image آخر نگه داشته می‌شود)
+- ✅ اجرا با Screen session (پایدار و قابل مدیریت)
 - ✅ Backup خودکار قبل از deployment
 - ✅ Health check و monitoring
-- ✅ Zero downtime deployment
+- ✅ اتصال مستقیم به بکند روی پورت 8020
 
 ```bash
 # تنظیم (فقط یکبار):
 # 1. اضافه کردن GitHub Secrets (SERVER_HOST, SSH_PRIVATE_KEY, ...)
 # 2. کلون پروژه روی سرور
-# 3. تنظیم .env روی سرور
+# 3. تنظیم .env روی سرور (API_BASE_URL=http://localhost:8020/api)
 
 # استفاده:
 git push origin main  # ← خودکار دیپلوی می‌شود! 🚀
@@ -105,27 +105,38 @@ git push origin main  # ← خودکار دیپلوی می‌شود! 🚀
 
 ### روش‌های دیپلوی دستی:
 
-#### 🐳 Docker
+#### 📱 Screen (توصیه می‌شود)
 ```bash
-cp .env.example .env && nano .env
-docker-compose up -d
+npm install && npm run build
+cp .env.example .env
+# API_BASE_URL=http://localhost:8020/api
+./screen-manager.sh start
+
+# مدیریت:
+./screen-manager.sh status   # وضعیت
+./screen-manager.sh logs     # لاگ‌ها
+./screen-manager.sh restart  # ری‌استارت
+screen -r iran-tournament-frontend  # اتصال
 ```
 
 #### 🔄 PM2
 ```bash
 npm install && npm run build
-cp .env.example .env && nano .env
+cp .env.example .env
 pm2 start ecosystem.config.cjs
+pm2 save && pm2 startup
 ```
 
-#### 🧹 پاکسازی خودکار Docker
+#### 📊 مانیتورینگ
 ```bash
-# اجرای اسکریپت cleanup (جلوگیری از پر شدن دیسک)
-./docker-cleanup.sh
+# Screen
+./screen-manager.sh status
+./screen-manager.sh logs
 
-# یا تنظیم cron برای اجرای روزانه:
-crontab -e
-# اضافه کنید: 0 2 * * * /path/to/docker-cleanup.sh
+# PM2
+pm2 status
+pm2 logs iran-tournament-frontend
+pm2 monit
 ```
 
 📖 راهنمای کامل دیپلوی: **[DEPLOY.md](./DEPLOY.md)** | **[QUICKSTART.md](./QUICKSTART.md)**

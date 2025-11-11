@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ################################################################################
-# اسکریپت دیپلوی Production با مدیریت هوشمند Docker
+# اسکریپت دیپلوی Production با Screen
 # این اسکریپت به صورت خودکار توسط GitHub Actions اجرا می‌شود
 ################################################################################
 
@@ -16,9 +16,10 @@ NC='\033[0m' # No Color
 
 # تنظیمات
 APP_NAME="iran-tournament-frontend"
-IMAGE_NAME="iran-tournament-frontend"
-CONTAINER_NAME="iran-tournament-frontend"
-MAX_IMAGES_TO_KEEP=2  # تعداد image هایی که نگه داشته می‌شوند
+APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCREEN_NAME="iran-tournament-frontend"
+LOG_DIR="$APP_DIR/logs"
+BACKUP_DIR="$APP_DIR/backups"
 
 # توابع کمکی
 log_info() {
@@ -45,134 +46,194 @@ echo "║     🚀 Iran Tournament Frontend Deployment           ║"
 echo "╚═══════════════════════════════════════════════════════╝"
 echo ""
 
-# بررسی وجود Docker
-if ! command -v docker &> /dev/null; then
-    log_error "Docker نصب نیست!"
+# بررسی وجود ابزارهای لازم
+if ! command -v node &> /dev/null; then
+    log_error "Node.js نصب نیست!"
 fi
 
-if ! command -v docker-compose &> /dev/null; then
-    log_error "Docker Compose نصب نیست!"
+if ! command -v npm &> /dev/null; then
+    log_error "npm نصب نیست!"
 fi
 
-# ۱. بررسی و دریافت Git commit hash برای تگ‌گذاری
+if ! command -v screen &> /dev/null; then
+    log_warning "screen نصب نیست! در حال نصب..."
+    sudo apt-get update && sudo apt-get install -y screen
+fi
+
+# ایجاد دایرکتوری‌های لازم
+mkdir -p "$LOG_DIR"
+mkdir -p "$BACKUP_DIR"
+
+# ۱. دریافت اطلاعات Git
 log_info "دریافت اطلاعات Git..."
-GIT_COMMIT=$(git rev-parse --short HEAD)
-GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-BUILD_DATE=$(date +%Y%m%d-%H%M%S)
-IMAGE_TAG="${GIT_COMMIT}-${BUILD_DATE}"
+GIT_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
+DEPLOY_DATE=$(date +%Y%m%d-%H%M%S)
+DEPLOY_TAG="${GIT_COMMIT}-${DEPLOY_DATE}"
 
 log_success "Branch: ${GIT_BRANCH}, Commit: ${GIT_COMMIT}"
 
-# ۲. ذخیره image فعلی برای rollback (اگر وجود داشته باشد)
-if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
-    log_info "ذخیره backup از کانتینر فعلی..."
-    CURRENT_IMAGE=$(docker inspect --format='{{.Image}}' ${CONTAINER_NAME} 2>/dev/null || echo "")
-    if [ ! -z "$CURRENT_IMAGE" ]; then
-        docker tag $CURRENT_IMAGE ${IMAGE_NAME}:backup-$(date +%Y%m%d-%H%M%S) || true
-        log_success "Backup ذخیره شد"
+# ۲. Backup فایل‌های قبلی
+if [ -d "$APP_DIR/.output" ]; then
+    log_info "ایجاد backup از build قبلی..."
+    BACKUP_FILE="$BACKUP_DIR/output-backup-${DEPLOY_DATE}.tar.gz"
+    tar -czf "$BACKUP_FILE" .output 2>/dev/null || true
+    log_success "Backup ذخیره شد: $BACKUP_FILE"
+
+    # نگه داشتن فقط 3 backup آخر
+    cd "$BACKUP_DIR"
+    ls -t | tail -n +4 | xargs -r rm -f
+    cd "$APP_DIR"
+fi
+
+# ۳. نصب dependencies
+log_info "نصب dependencies..."
+npm install --production=false || log_error "خطا در نصب dependencies"
+log_success "Dependencies نصب شدند"
+
+# ۴. Build پروژه
+log_info "ساخت production build..."
+npm run build || log_error "خطا در build پروژه"
+log_success "Build با موفقیت ساخته شد"
+
+# ۵. بررسی فایل .env
+if [ ! -f "$APP_DIR/.env" ]; then
+    log_warning "فایل .env وجود ندارد!"
+    if [ -f "$APP_DIR/.env.example" ]; then
+        log_info "کپی از .env.example..."
+        cp "$APP_DIR/.env.example" "$APP_DIR/.env"
+        log_warning "لطفاً فایل .env را ویرایش کنید!"
     fi
 fi
 
-# ۳. توقف و حذف کانتینر قبلی
-log_info "توقف کانتینرهای قبلی..."
-docker-compose down --remove-orphans || true
-log_success "کانتینرهای قبلی متوقف شدند"
-
-# ۴. ساخت image جدید با تگ
-log_info "ساخت Docker image جدید..."
-export DOCKER_BUILDKIT=1  # استفاده از BuildKit برای build سریعتر
-docker build \
-    --tag ${IMAGE_NAME}:${IMAGE_TAG} \
-    --tag ${IMAGE_NAME}:latest \
-    --build-arg BUILDKIT_INLINE_CACHE=1 \
-    --progress=plain \
-    . || log_error "خطا در ساخت Docker image"
-
-log_success "Image با موفقیت ساخته شد: ${IMAGE_NAME}:${IMAGE_TAG}"
-
-# ۵. اجرای کانتینر جدید
-log_info "راه‌اندازی کانتینر جدید..."
-docker-compose up -d || log_error "خطا در راه‌اندازی کانتینر"
-
-# ۶. بررسی سلامت کانتینر
-log_info "بررسی وضعیت کانتینر..."
-sleep 5
-
-if docker ps | grep -q ${CONTAINER_NAME}; then
-    log_success "کانتینر با موفقیت در حال اجراست"
-
-    # نمایش لاگ‌های اولیه
-    log_info "لاگ‌های اولیه کانتینر:"
-    docker logs --tail 20 ${CONTAINER_NAME}
-else
-    log_error "کانتینر شروع نشد! در حال بررسی لاگ‌ها..."
-    docker logs ${CONTAINER_NAME}
-    exit 1
+# ۶. توقف application قبلی (اگر در حال اجراست)
+log_info "بررسی application قبلی..."
+if screen -list | grep -q "$SCREEN_NAME"; then
+    log_info "توقف application قبلی..."
+    screen -S "$SCREEN_NAME" -X quit || true
+    sleep 3
+    log_success "Application قبلی متوقف شد"
 fi
 
-# ۷. پاکسازی Docker (بخش مهم!)
-log_warning "شروع پاکسازی Docker..."
-
-# 7.1. حذف dangling images (image هایی که تگ ندارند)
-log_info "حذف dangling images..."
-docker image prune -f || true
-
-# 7.2. نگه داشتن فقط N تا از آخرین image ها
-log_info "نگه داشتن فقط ${MAX_IMAGES_TO_KEEP} image اخیر..."
-OLD_IMAGES=$(docker images ${IMAGE_NAME} --format "{{.ID}}" | tail -n +$((MAX_IMAGES_TO_KEEP + 1)))
-if [ ! -z "$OLD_IMAGES" ]; then
-    echo "$OLD_IMAGES" | xargs -r docker rmi -f 2>/dev/null || true
-    log_success "Image های قدیمی حذف شدند"
-else
-    log_info "Image قدیمی برای حذف وجود ندارد"
+# بررسی اینکه پورت 3000 آزاد باشد
+if lsof -i :3000 &> /dev/null; then
+    log_warning "پورت 3000 هنوز در حال استفاده است!"
+    log_info "در حال kill کردن پروسه..."
+    lsof -ti :3000 | xargs -r kill -9 2>/dev/null || true
+    sleep 2
 fi
 
-# 7.3. حذف volume های استفاده نشده
-log_info "پاکسازی volume های استفاده نشده..."
-docker volume prune -f || true
+# ۷. شروع application جدید
+log_info "شروع application جدید در screen session..."
 
-# 7.4. حذف network های استفاده نشده
-log_info "پاکسازی network های استفاده نشده..."
-docker network prune -f || true
+# بارگذاری متغیرهای محیطی
+export NODE_ENV=production
+if [ -f "$APP_DIR/.env" ]; then
+    export $(cat "$APP_DIR/.env" | grep -v '^#' | grep -v '^$' | xargs)
+fi
 
-# 7.5. حذف build cache قدیمی (نگه داشتن فقط cache اخیر)
-log_info "پاکسازی build cache..."
-docker builder prune -f --filter "until=24h" || true
+# شروع screen session
+screen -dmS "$SCREEN_NAME" bash -c "
+    cd '$APP_DIR'
+    export NODE_ENV=production
+    export PORT=\${PORT:-3000}
+    export NUXT_PUBLIC_API_BASE=\${API_BASE_URL:-http://localhost:8020/api}
 
-log_success "پاکسازی Docker کامل شد"
+    echo '═══════════════════════════════════════════════════════'
+    echo '🚀 Iran Tournament Frontend Starting...'
+    echo '═══════════════════════════════════════════════════════'
+    echo 'Time: \$(date)'
+    echo 'Deploy Tag: ${DEPLOY_TAG}'
+    echo 'Git Commit: ${GIT_COMMIT}'
+    echo 'Working Directory: \$(pwd)'
+    echo 'API URL: \$NUXT_PUBLIC_API_BASE'
+    echo 'Port: \$PORT'
+    echo '═══════════════════════════════════════════════════════'
+    echo ''
 
-# ۸. نمایش اطلاعات فضای استفاده شده
-echo ""
-log_info "وضعیت فضای Docker:"
-docker system df
+    node .output/server/index.mjs 2>&1 | tee -a '$LOG_DIR/app.log'
+"
 
-# ۹. نمایش اطلاعات نهایی
+sleep 3
+
+# ۸. بررسی موفقیت
+log_info "بررسی وضعیت application..."
+
+if screen -list | grep -q "$SCREEN_NAME"; then
+    log_success "Screen session با موفقیت ایجاد شد"
+
+    # بررسی اینکه پورت 3000 در حال استفاده است
+    sleep 5
+    if lsof -i :3000 &> /dev/null; then
+        log_success "Application روی پورت 3000 در حال اجراست"
+    else
+        log_warning "پورت 3000 هنوز فعال نشده است، لطفاً لاگ‌ها را بررسی کنید"
+    fi
+else
+    log_error "خطا در شروع screen session!"
+fi
+
+# ۹. تست سلامت
+log_info "تست endpoint..."
+sleep 3
+
+HEALTH_CHECK_ATTEMPTS=0
+MAX_ATTEMPTS=10
+
+while [ $HEALTH_CHECK_ATTEMPTS -lt $MAX_ATTEMPTS ]; do
+    if curl -f http://localhost:3000 -s -o /dev/null 2>&1; then
+        log_success "✅ Application is healthy!"
+        break
+    else
+        HEALTH_CHECK_ATTEMPTS=$((HEALTH_CHECK_ATTEMPTS + 1))
+        if [ $HEALTH_CHECK_ATTEMPTS -lt $MAX_ATTEMPTS ]; then
+            log_info "تلاش $HEALTH_CHECK_ATTEMPTS از $MAX_ATTEMPTS - صبر کنید..."
+            sleep 3
+        fi
+    fi
+done
+
+if [ $HEALTH_CHECK_ATTEMPTS -eq $MAX_ATTEMPTS ]; then
+    log_warning "⚠️  Application بعد از $MAX_ATTEMPTS تلاش پاسخ نداد"
+    log_info "لاگ‌های اخیر:"
+    tail -n 20 "$LOG_DIR/app.log"
+fi
+
+# ۱۰. پاکسازی
+log_info "پاکسازی فایل‌های موقت..."
+
+# حذف node_modules قدیمی (اختیاری)
+# پاکسازی لاگ‌های قدیمی (بیش از 7 روز)
+find "$LOG_DIR" -name "*.log" -type f -mtime +7 -delete 2>/dev/null || true
+
+log_success "پاکسازی انجام شد"
+
+# ۱۱. نمایش اطلاعات نهایی
 echo ""
 echo "╔═══════════════════════════════════════════════════════╗"
 echo "║            ✅ Deployment Successful!                  ║"
 echo "╚═══════════════════════════════════════════════════════╝"
 echo ""
-log_info "🏷️  Image Tag: ${IMAGE_TAG}"
-log_info "📦 Container: ${CONTAINER_NAME}"
+log_info "🏷️  Deploy Tag: ${DEPLOY_TAG}"
 log_info "🔗 Git Commit: ${GIT_COMMIT}"
-log_info "📅 Build Date: ${BUILD_DATE}"
+log_info "📅 Deploy Date: ${DEPLOY_DATE}"
+log_info "📦 Screen Session: ${SCREEN_NAME}"
+log_info "🌐 URL: http://localhost:3000"
+log_info "🔌 API Backend: http://localhost:8020/api"
 echo ""
 
-# ۱۰. تست سلامت
-log_info "تست endpoint..."
-sleep 3
-if curl -f http://localhost:3000 -s -o /dev/null; then
-    log_success "✅ Application is healthy!"
-else
-    log_warning "⚠️  Application might not be ready yet. Check logs: docker logs ${CONTAINER_NAME}"
-fi
-
-echo ""
 log_success "🎉 دیپلوی با موفقیت انجام شد!"
 echo ""
 log_info "دستورات مفید:"
-echo "  • مشاهده لاگ‌ها: docker logs -f ${CONTAINER_NAME}"
-echo "  • ری‌استارت: docker-compose restart"
-echo "  • توقف: docker-compose down"
-echo "  • وضعیت: docker ps"
+echo "  • مشاهده لاگ‌ها: ./screen-manager.sh logs"
+echo "  • اتصال به session: screen -r ${SCREEN_NAME}"
+echo "  • وضعیت: ./screen-manager.sh status"
+echo "  • ری‌استارت: ./screen-manager.sh restart"
+echo "  • توقف: ./screen-manager.sh stop"
+echo "  • جدا شدن از screen: Ctrl+A ثم D"
+echo ""
+
+# نمایش لاگ‌های اخیر
+log_info "لاگ‌های اخیر:"
+tail -n 15 "$LOG_DIR/app.log" || log_warning "لاگ هنوز ایجاد نشده"
 echo ""

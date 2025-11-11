@@ -37,7 +37,7 @@ jobs:
 
             # اجرای اسکریپت دیپلوی
             echo "🔄 Running deployment script..."
-            chmod +x ./deploy-production.sh
+            chmod +x ./deploy-production.sh ./screen-manager.sh
             ./deploy-production.sh
 
             echo "✅ Deployment completed successfully!"
