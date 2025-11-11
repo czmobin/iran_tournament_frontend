@@ -86,17 +86,34 @@ if [ -d "$APP_DIR/.output" ]; then
     cd "$APP_DIR"
 fi
 
-# ۳. نصب dependencies
+# ۳. پاک کردن cache ها
+log_info "پاک کردن cache ها و build های قبلی..."
+rm -rf node_modules/.cache
+rm -rf .nuxt
+rm -rf .output
+log_success "Cache ها پاک شدند"
+
+# ۴. نصب dependencies
 log_info "نصب dependencies..."
-npm install --production=false || log_error "خطا در نصب dependencies"
+npm ci || npm install || log_error "خطا در نصب dependencies"
 log_success "Dependencies نصب شدند"
 
-# ۴. Build پروژه
+# ۵. Build پروژه
 log_info "ساخت production build..."
-npm run build || log_error "خطا در build پروژه"
+# افزایش حافظه Node.js برای build
+export NODE_OPTIONS="--max-old-space-size=2048"
+npm run build 2>&1 | tee "$LOG_DIR/build.log" || {
+    log_error "خطا در build پروژه!"
+    echo ""
+    echo "══════════════════════════════════════════════════"
+    echo "آخرین 30 خط از لاگ build:"
+    echo "══════════════════════════════════════════════════"
+    tail -n 30 "$LOG_DIR/build.log"
+    exit 1
+}
 log_success "Build با موفقیت ساخته شد"
 
-# ۵. بررسی فایل .env
+# ۶. بررسی فایل .env
 if [ ! -f "$APP_DIR/.env" ]; then
     log_warning "فایل .env وجود ندارد!"
     if [ -f "$APP_DIR/.env.example" ]; then
@@ -106,7 +123,7 @@ if [ ! -f "$APP_DIR/.env" ]; then
     fi
 fi
 
-# ۶. توقف application قبلی (اگر در حال اجراست)
+# ۷. توقف application قبلی (اگر در حال اجراست)
 log_info "بررسی application قبلی..."
 if screen -list | grep -q "$SCREEN_NAME"; then
     log_info "توقف application قبلی..."
@@ -123,7 +140,7 @@ if lsof -i :3000 &> /dev/null; then
     sleep 2
 fi
 
-# ۷. شروع application جدید
+# ۸. شروع application جدید
 log_info "شروع application جدید در screen session..."
 
 # بارگذاری متغیرهای محیطی
@@ -156,7 +173,7 @@ screen -dmS "$SCREEN_NAME" bash -c "
 
 sleep 3
 
-# ۸. بررسی موفقیت
+# ۹. بررسی موفقیت
 log_info "بررسی وضعیت application..."
 
 if screen -list | grep -q "$SCREEN_NAME"; then
@@ -173,7 +190,7 @@ else
     log_error "خطا در شروع screen session!"
 fi
 
-# ۹. تست سلامت
+# ۱۰. تست سلامت
 log_info "تست endpoint..."
 sleep 3
 
@@ -199,7 +216,7 @@ if [ $HEALTH_CHECK_ATTEMPTS -eq $MAX_ATTEMPTS ]; then
     tail -n 20 "$LOG_DIR/app.log"
 fi
 
-# ۱۰. پاکسازی
+# ۱۱. پاکسازی
 log_info "پاکسازی فایل‌های موقت..."
 
 # حذف node_modules قدیمی (اختیاری)
@@ -208,7 +225,7 @@ find "$LOG_DIR" -name "*.log" -type f -mtime +7 -delete 2>/dev/null || true
 
 log_success "پاکسازی انجام شد"
 
-# ۱۱. نمایش اطلاعات نهایی
+# ۱۲. نمایش اطلاعات نهایی
 echo ""
 echo "╔═══════════════════════════════════════════════════════╗"
 echo "║            ✅ Deployment Successful!                  ║"
