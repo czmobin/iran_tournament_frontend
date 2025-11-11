@@ -76,68 +76,15 @@ npm run build
 npm run preview
 ```
 
-## 🌐 دیپلوی روی سرور
-
-### 🚀 Build خودکار با CI/CD ⭐ (توصیه می‌شود)
-
-پروژه دارای سیستم CI/CD است که **هر merge به main را خودکار build می‌کند**.
-
-**نکته مهم:** CI/CD فقط کد را build می‌کند و اجرای آن (restart) باید دستی انجام شود.
-
-**ویژگی‌ها:**
-- ✅ Build خودکار با GitHub Actions
-- ✅ Backup خودکار قبل از build
-- ✅ اتصال مستقیم به بکند روی پورت 8020
-- ✅ مدیریت دستی پروسه با PM2
+### اجرای نسخه Production
 
 ```bash
-# تنظیم (فقط یکبار):
-# 1. نصب PM2: npm install -g pm2
-# 2. اضافه کردن GitHub Secrets (SERVER_HOST, SSH_PRIVATE_KEY, ...)
-# 3. کلون پروژه روی سرور در /home/archive
-# 4. تنظیم .env روی سرور (API_BASE_URL=http://localhost:8020/api)
-# 5. اجرای اولیه: pm2 start ecosystem.config.cjs
+# Build پروژه
+npm run build
 
-# استفاده:
-git push origin main  # ← خودکار build می‌شود! 🔨
-# بعد دستی: pm2 restart iran-tournament-frontend
+# اجرا با Node.js
+node .output/server/index.mjs
 ```
-
-📖 راهنمای کامل CI/CD: **[CI-CD-SETUP.md](./CI-CD-SETUP.md)**
-
----
-
-### روش‌های دیپلوی دستی:
-
-#### ⚡ اسکریپت Build
-```bash
-# Build کد (بدون اجرا)
-./deploy-production.sh
-
-# سپس اجرا یا ری‌استارت دستی:
-pm2 restart iran-tournament-frontend
-# یا اگر اولین بار است:
-pm2 start ecosystem.config.cjs
-```
-
-#### 🔄 PM2 (قدم به قدم)
-```bash
-npm install && npm run build
-cp .env.example .env
-pm2 start ecosystem.config.cjs
-pm2 save && pm2 startup
-```
-
-#### 📊 مدیریت و مانیتورینگ PM2
-```bash
-pm2 status                          # وضعیت
-pm2 logs iran-tournament-frontend   # لاگ‌ها
-pm2 monit                           # مانیتورینگ real-time
-pm2 restart iran-tournament-frontend # ری‌استارت
-pm2 stop iran-tournament-frontend   # توقف
-```
-
-📖 راهنمای کامل دیپلوی: **[DEPLOY.md](./DEPLOY.md)** | **[QUICKSTART.md](./QUICKSTART.md)**
 
 ## 📁 ساختار پروژه
 
@@ -155,13 +102,7 @@ iran_tournament_frontend/
 │   └── tournaments/    # صفحات مربوط به تورنومنت‌ها
 ├── plugins/            # پلاگین‌های Vue
 ├── stores/             # Store های Pinia
-├── public/             # فایل‌های استاتیک
-├── Dockerfile          # تنظیمات Docker
-├── docker-compose.yml  # Docker Compose config
-├── ecosystem.config.cjs # تنظیمات PM2
-├── nginx.conf.example  # نمونه تنظیمات Nginx
-├── deploy.sh          # اسکریپت دیپلوی خودکار
-└── DEPLOY.md          # راهنمای کامل دیپلوی
+└── public/             # فایل‌های استاتیک
 ```
 
 ## 🔧 تنظیمات محیطی
@@ -188,7 +129,6 @@ NODE_ENV=production
 
 ## 📝 مستندات بیشتر
 
-- [راهنمای دیپلوی](./DEPLOY.md) - راهنمای کامل دیپلوی به فارسی
 - [مستندات Nuxt](https://nuxt.com/docs)
 - [مستندات Tailwind CSS](https://tailwindcss.com/docs)
 
