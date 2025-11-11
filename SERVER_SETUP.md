@@ -1,0 +1,181 @@
+# 🚀 راهنمای راه‌اندازی روی سرور
+
+## مشکل: فایل‌های Background لود نمیشن
+
+اگه تصاویر background (mobile_index.png و desktop_index.png) لود نمیشن، این مراحل رو دنبال کن:
+
+---
+
+## ✅ راه‌حل (قدم به قدم)
+
+### 1️⃣ رفتن به پوشه پروژه
+
+```bash
+cd /path/to/iran_tournament_frontend
+```
+
+### 2️⃣ دریافت آخرین تغییرات
+
+```bash
+git pull origin main
+# یا اگه روی برنچ دیگه‌ای هستی:
+# git pull origin your-branch-name
+```
+
+### 3️⃣ اجرای اسکریپت فیکس (خودکار)
+
+```bash
+./fix-images.sh
+```
+
+این اسکریپت:
+- فایل‌های تصویری رو از `.github/screenshots/` به `public/` کپی می‌کنه
+- بررسی می‌کنه که فایل‌ها درست کپی شدن
+
+### 4️⃣ نصب Dependencies (اگه تغییری بوده)
+
+```bash
+npm install
+```
+
+### 5️⃣ Build مجدد پروژه ⚠️ مهم
+
+```bash
+npm run build
+```
+
+این مرحله **حتماً** باید انجام بشه تا فایل‌های تصویری به `.output/public/` منتقل بشن.
+
+### 6️⃣ ری‌استارت اپلیکیشن
+
+بسته به روش اجرا:
+
+#### اگه با PM2:
+```bash
+pm2 restart iran-tournament-frontend
+
+# یا اگه اولین باره:
+PORT=3020 pm2 start .output/server/index.mjs --name iran-tournament-frontend
+pm2 save
+```
+
+#### اگه با Screen:
+```bash
+# رفتن به screen
+screen -r iran-frontend
+
+# Ctrl+C برای توقف
+# بعد اجرای دوباره:
+PORT=3020 node .output/server/index.mjs
+
+# Ctrl+A سپس D برای detach
+```
+
+#### اگه با systemd:
+```bash
+sudo systemctl restart iran-tournament-frontend
+```
+
+---
+
+## 🔍 بررسی درستی
+
+بعد از انجام مراحل، چک کن:
+
+```bash
+# بررسی وجود فایل‌ها در public
+ls -lh public/*.png
+
+# بررسی وجود فایل‌ها در output
+ls -lh .output/public/*.png
+
+# هر دو باید نمایش داده بشن:
+# mobile_index.png
+# desktop_index.png
+```
+
+### تست در مرورگر
+
+1. باز کن: `http://your-server-ip:3020`
+2. F12 برای باز کردن Developer Tools
+3. تب Network رو باز کن
+4. فیلتر رو روی "Img" بذار
+5. صفحه رو refresh کن
+6. باید ببینی که `mobile_index.png` و `desktop_index.png` با وضعیت 200 لود میشن
+
+---
+
+## ❌ اگه هنوز مشکل داره
+
+### بررسی دستی:
+
+```bash
+# چک کن که فایل‌ها کجا هستن
+find . -name "mobile_index.png" -o -name "desktop_index.png"
+
+# باید این مسیرها رو نشون بده:
+# ./.github/screenshots/mobile_index.png
+# ./.github/screenshots/desktop_index.png
+# ./public/mobile_index.png
+# ./public/desktop_index.png
+# ./.output/public/mobile_index.png
+# ./.output/public/desktop_index.png
+```
+
+### کپی دستی:
+
+```bash
+# اگه اسکریپت کار نکرد، دستی کپی کن:
+mkdir -p public
+cp .github/screenshots/mobile_index.png public/
+cp .github/screenshots/desktop_index.png public/
+
+# بعد حتماً build کن:
+npm run build
+
+# و ری‌استارت:
+pm2 restart iran-tournament-frontend
+```
+
+### بررسی لاگ‌ها:
+
+```bash
+# اگه با PM2:
+pm2 logs iran-tournament-frontend
+
+# اگه با systemd:
+sudo journalctl -u iran-tournament-frontend -f
+
+# چک کن که ارور 404 برای فایل‌های .png نداشته باشی
+```
+
+---
+
+## 📋 چک‌لیست نهایی
+
+قبل از ری‌استارت، مطمئن شو:
+
+- [ ] `git pull` انجام شده
+- [ ] فایل‌ها در `public/` موجود هستن: `ls public/*.png`
+- [ ] `npm install` اجرا شده
+- [ ] `npm run build` اجرا شده
+- [ ] فایل‌ها در `.output/public/` موجود هستن: `ls .output/public/*.png`
+- [ ] فایل `.env` موجود هست و تنظیمات درسته
+- [ ] اپلیکیشن ری‌استارت شده
+
+---
+
+## 🎯 خلاصه یک‌خطی
+
+برای عجله‌ای‌ها:
+
+```bash
+cd /path/to/iran_tournament_frontend && \
+git pull && \
+./fix-images.sh && \
+npm install && \
+npm run build && \
+pm2 restart iran-tournament-frontend
+```
+
+این همه چیز رو یکجا انجام میده! ✅
