@@ -57,7 +57,16 @@ fi
 
 if ! command -v screen &> /dev/null; then
     log_warning "screen نصب نیست! در حال نصب..."
-    sudo apt-get update && sudo apt-get install -y screen
+    export DEBIAN_FRONTEND=noninteractive
+    sudo apt-get update -qq && sudo apt-get install -y screen || {
+        log_error "نصب screen ناموفق بود! لطفاً دستی نصب کنید: sudo apt-get install screen"
+    }
+
+    # بررسی نصب موفق
+    if ! command -v screen &> /dev/null; then
+        log_error "screen نصب نشد! لطفاً دستی نصب کنید."
+    fi
+    log_success "screen با موفقیت نصب شد"
 fi
 
 # ایجاد دایرکتوری‌های لازم
@@ -149,7 +158,12 @@ if [ -f "$APP_DIR/.env" ]; then
     export $(cat "$APP_DIR/.env" | grep -v '^#' | grep -v '^$' | xargs)
 fi
 
+# بررسی screen قبل از استفاده
+log_info "بررسی screen..."
+screen -v || log_error "screen به درستی نصب نشده است!"
+
 # شروع screen session
+log_info "ایجاد screen session با نام: $SCREEN_NAME"
 screen -dmS "$SCREEN_NAME" bash -c "
     cd '$APP_DIR'
     export NODE_ENV=production
@@ -160,21 +174,40 @@ screen -dmS "$SCREEN_NAME" bash -c "
     echo '🚀 Iran Tournament Frontend Starting...'
     echo '═══════════════════════════════════════════════════════'
     echo 'Time: \$(date)'
-    echo 'Deploy Tag: ${DEPLOY_TAG}'
-    echo 'Git Commit: ${GIT_COMMIT}'
+    echo 'Deploy Tag: $DEPLOY_TAG'
+    echo 'Git Commit: $GIT_COMMIT'
     echo 'Working Directory: \$(pwd)'
     echo 'API URL: \$NUXT_PUBLIC_API_BASE'
     echo 'Port: \$PORT'
     echo '═══════════════════════════════════════════════════════'
     echo ''
 
-    node .output/server/index.mjs 2>&1 | tee -a '$LOG_DIR/app.log'
-"
+    echo 'Checking output directory...'
+    ls -la .output/server/ || echo 'ERROR: .output/server not found!'
+
+    if [ -f .output/server/index.mjs ]; then
+        echo 'Starting Node.js server...'
+        node .output/server/index.mjs 2>&1 | tee -a '$LOG_DIR/app.log'
+    else
+        echo 'ERROR: .output/server/index.mjs not found!'
+        echo 'Build may have failed. Check build logs.'
+        exit 1
+    fi
+" || {
+    log_error "خطا در ایجاد screen session!"
+    log_info "خطای screen:"
+    screen -list || true
+    exit 1
+}
 
 sleep 3
 
 # ۹. بررسی موفقیت
 log_info "بررسی وضعیت application..."
+
+# نمایش لیست screen sessions
+log_info "لیست screen sessions:"
+screen -list || log_warning "هیچ screen session ای وجود ندارد"
 
 if screen -list | grep -q "$SCREEN_NAME"; then
     log_success "Screen session با موفقیت ایجاد شد"
@@ -185,9 +218,14 @@ if screen -list | grep -q "$SCREEN_NAME"; then
         log_success "Application روی پورت 3000 در حال اجراست"
     else
         log_warning "پورت 3000 هنوز فعال نشده است، لطفاً لاگ‌ها را بررسی کنید"
+        log_info "نمایش لاگ‌های اخیر:"
+        tail -n 20 "$LOG_DIR/app.log" 2>/dev/null || echo "لاگ هنوز ایجاد نشده"
     fi
 else
     log_error "خطا در شروع screen session!"
+    log_info "بررسی لاگ‌ها:"
+    tail -n 30 "$LOG_DIR/app.log" 2>/dev/null || echo "لاگ وجود ندارد"
+    exit 1
 fi
 
 # ۱۰. تست سلامت
