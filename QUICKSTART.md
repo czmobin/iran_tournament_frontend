@@ -4,79 +4,77 @@
 
 ---
 
-## 🎯 روش‌های دیپلوی
+## 🎯 دیپلوی خودکار با CI/CD ⭐ (توصیه می‌شود)
 
-### گزینه 1️⃣: دیپلوی خودکار با CI/CD ⭐ (توصیه می‌شود)
-
-**مزایا:** دیپلوی خودکار با Screen، مدیریت هوشمند، rollback safety
+**مزایا:** دیپلوی خودکار با PM2، مدیریت هوشمند، rollback safety
 
 ```bash
-# 1. روی سرور: نصب Node.js و screen
+# 1. روی سرور: نصب Node.js
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt-get install -y nodejs screen
+sudo apt-get install -y nodejs
 
-# 2. کلون پروژه
-git clone <repo-url> && cd iran_tournament_frontend
+# 2. نصب PM2
+npm install -g pm2
 
-# 3. تنظیم environment (API روی همین سرور - پورت 8020)
+# 3. کلون پروژه در /home/archive
+cd /home/archive
+git clone <repo-url>
+cd iran_tournament_frontend
+
+# 4. تنظیم environment (API روی همین سرور - پورت 8020)
 cp .env.example .env
-# API_BASE_URL=http://localhost:8020/api
+# API_BASE_URL=http://localhost:8020/api (پیش‌فرض)
 
-# 4. تنظیم GitHub Secrets (فقط یکبار)
+# 5. تنظیم GitHub Secrets (فقط یکبار)
 # SERVER_HOST, SERVER_USERNAME, SSH_PRIVATE_KEY, PROJECT_PATH
 
-# 5. هر Push به main = دیپلوی خودکار! ✨
+# 6. هر Push به main = دیپلوی خودکار! ✨
 ```
 
 📖 راهنمای کامل: [CI-CD-SETUP.md](./CI-CD-SETUP.md)
 
 ---
 
-### گزینه 2️⃣: دیپلوی دستی با Screen
+## 🚀 دیپلوی دستی
 
-**مزایا:** ساده، مستقیم، قابل مدیریت
+### روش 1️⃣: استفاده از اسکریپت دیپلوی (توصیه می‌شود)
 
 ```bash
 # کلون و تنظیم
-git clone <repo-url> && cd iran_tournament_frontend
+cd /home/archive
+git clone <repo-url>
+cd iran_tournament_frontend
 cp .env.example .env
-# ویرایش .env (پورت بکند: 8020)
+
+# دیپلوی (همه چیز خودکار)
+chmod +x deploy-production.sh
+./deploy-production.sh
+
+# ✅ Done! -> http://localhost:3000
+```
+
+### روش 2️⃣: دیپلوی قدم به قدم
+
+```bash
+# نصب PM2 (اگر نیست)
+npm install -g pm2
 
 # نصب و build
 npm install
 npm run build
 
-# اجرا با screen
-./screen-manager.sh start
+# تنظیم .env
+cp .env.example .env
 
-# ✅ Done! -> http://localhost:3000
-# API: http://localhost:8020/api
-```
-
----
-
-### گزینه 3️⃣: دیپلوی با PM2
-
-**مزایا:** مانیتورینگ، auto-restart، cluster mode
-
-```bash
-# نصب PM2
-npm install -g pm2
-
-# آماده‌سازی
-git clone <repo-url> && cd iran_tournament_frontend
-cp .env.example .env && npm install && npm run build
-
-# اجرا
+# شروع با PM2
 pm2 start ecosystem.config.cjs
-pm2 save && pm2 startup
-
-# ✅ Done! -> http://localhost:3000
+pm2 save
+pm2 startup  # برای شروع خودکار بعد از reboot
 ```
 
 ---
 
-## 🔧 تنظیمات اولیه (همه روش‌ها)
+## 🔧 تنظیمات اولیه
 
 ### فایل `.env`:
 ```env
@@ -88,51 +86,45 @@ NODE_ENV=production
 
 ---
 
-## 🚀 دستورات سریع
+## 📊 مدیریت با PM2
+
+### دستورات اصلی:
+
+```bash
+# وضعیت
+pm2 status
+pm2 list
+
+# لاگ‌ها (real-time)
+pm2 logs iran-tournament-frontend
+pm2 logs iran-tournament-frontend --lines 100
+
+# ری‌استارت
+pm2 restart iran-tournament-frontend
+
+# توقف
+pm2 stop iran-tournament-frontend
+
+# شروع مجدد
+pm2 start iran-tournament-frontend
+
+# حذف
+pm2 delete iran-tournament-frontend
+
+# مانیتورینگ
+pm2 monit
+```
 
 ### بروزرسانی:
 
 ```bash
 # با CI/CD
-git pull origin main  # خودکار دیپلوی می‌شود!
+git push origin main  # خودکار دیپلوی می‌شود!
 
-# با Screen (دستی)
-git pull
-npm install && npm run build
-./screen-manager.sh restart
-
-# با PM2
-git pull && npm install && npm run build && pm2 restart iran-tournament-frontend
-```
-
-### مدیریت Screen:
-
-```bash
-# وضعیت
-./screen-manager.sh status
-
-# شروع
-./screen-manager.sh start
-
-# توقف
-./screen-manager.sh stop
-
-# ری‌استارت
-./screen-manager.sh restart
-
-# مشاهده لاگ
-./screen-manager.sh logs
-
-# اتصال به session
-./screen-manager.sh attach
-# (جدا شدن: Ctrl+A سپس D)
-```
-
-### مشاهده لاگ با PM2:
-
-```bash
-pm2 logs iran-tournament-frontend
-pm2 monit
+# دستی
+cd /home/archive/iran_tournament_frontend
+git pull origin main
+./deploy-production.sh
 ```
 
 ---
@@ -142,7 +134,7 @@ pm2 monit
 | فایل | محتوا |
 |------|-------|
 | [README.md](./README.md) | معرفی پروژه و ویژگی‌ها |
-| [DEPLOY.md](./DEPLOY.md) | راهنمای کامل دیپلوی (3 روش) |
+| [DEPLOY.md](./DEPLOY.md) | راهنمای کامل دیپلوی |
 | [CI-CD-SETUP.md](./CI-CD-SETUP.md) | راه‌اندازی CI/CD خودکار |
 | **QUICKSTART.md** | همین راهنمای سریع! |
 
@@ -152,24 +144,23 @@ pm2 monit
 
 ### Application شروع نمی‌شود:
 ```bash
-# با Screen
-./screen-manager.sh logs
-# یا
-screen -r iran-tournament-frontend
+# بررسی وضعیت PM2
+pm2 status
 
-# با PM2
+# مشاهده لاگ
 pm2 logs iran-tournament-frontend --lines 50
+
+# بررسی خطاها
+pm2 logs iran-tournament-frontend --err --lines 50
 ```
 
 ### پورت 3000 گرفته است:
 ```bash
 # پیدا کردن پروسه
 sudo lsof -i :3000
-# کشتن پروسه
-sudo kill -9 <PID>
 
-# یا با screen-manager
-./screen-manager.sh restart
+# یا ری‌استارت PM2
+pm2 restart iran-tournament-frontend
 ```
 
 ### اتصال به بکند برقرار نیست:
@@ -179,15 +170,16 @@ curl http://localhost:8020/api
 
 # بررسی فایل .env
 cat .env | grep API_BASE_URL
+
+# بررسی متغیرهای محیطی PM2
+pm2 env iran-tournament-frontend
 ```
 
-### Screen session پیدا نمی‌شود:
+### PM2 بعد از reboot شروع نمی‌شود:
 ```bash
-# لیست همه session ها
-screen -list
-
-# شروع دوباره
-./screen-manager.sh start
+# یکبار این رو اجرا کن:
+pm2 startup
+pm2 save
 ```
 
 ---
@@ -196,19 +188,31 @@ screen -list
 
 - 🌐 Frontend: `http://localhost:3000`
 - 🔌 Backend API: `http://localhost:8020/api`
-- 📊 لاگ‌ها: `./screen-manager.sh logs`
+- 📊 لاگ‌ها: `pm2 logs iran-tournament-frontend`
 - 🔄 بروزرسانی: `git pull` (با CI/CD خودکار!)
-- 📱 Screen Session: `screen -r iran-tournament-frontend`
+- 📈 مانیتورینگ: `pm2 monit`
 
 ---
 
 ## 🔍 نکات مهم:
 
 1. **Backend باید روی پورت 8020 در حال اجرا باشد**
-2. **Screen session در background اجرا می‌شود**
-3. **لاگ‌ها در `logs/app.log` ذخیره می‌شوند**
+2. **PM2 به صورت daemon در background اجرا می‌شود**
+3. **لاگ‌ها در `logs/pm2-*.log` ذخیره می‌شوند**
 4. **Backup ها در `backups/` قرار می‌گیرند**
-5. **برای detach از screen: Ctrl+A ثم D**
+5. **PM2 auto-restart دارد (اگر crash کرد، خودش دوباره میاره بالا)**
+
+---
+
+## 💡 مزایای PM2:
+
+✅ **مدیریت پروسه حرفه‌ای**
+✅ **Auto-restart در صورت crash**
+✅ **لاگ‌گذاری خودکار**
+✅ **مانیتورینگ real-time**
+✅ **کم‌ترین overhead**
+✅ **Cluster mode support**
+✅ **شروع خودکار بعد از reboot**
 
 ---
 
