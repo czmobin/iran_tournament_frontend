@@ -30,4 +30,20 @@ body {
   opacity: 0;
   transition: opacity 0.3s ease-in-out;
 }
+
+/* Page transitions */
+.page-enter-active,
+.page-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.page-enter-from {
+  opacity: 0;
+  transform: translateX(-20px);
+}
+
+.page-leave-to {
+  opacity: 0;
+  transform: translateX(20px);
+}
 </style>

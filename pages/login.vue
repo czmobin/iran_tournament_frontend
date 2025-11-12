@@ -81,14 +81,14 @@
               type="text"
               required
               autofocus
-              maxlength="6"
+              maxlength="5"
               class="w-full px-4 py-4 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-2xl text-center tracking-widest font-bold"
-              placeholder="------"
-              pattern="[0-9]{6}"
+              placeholder="-----"
+              pattern="[0-9]{5}"
               inputmode="numeric"
             >
             <p class="text-xs text-gray-500 mt-2 text-center">
-              کد 6 رقمی را وارد کنید
+              کد 5 رقمی را وارد کنید
             </p>
           </div>
 
@@ -110,7 +110,7 @@
           <!-- Submit Button -->
           <button
             type="submit"
-            :disabled="loading || otp.length !== 6"
+            :disabled="loading || otp.length !== 5"
             class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold py-3 md:py-4 rounded-xl hover:from-purple-700 hover:to-indigo-700 transition transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed text-base md:text-lg"
           >
             <span v-if="loading" class="flex items-center justify-center">

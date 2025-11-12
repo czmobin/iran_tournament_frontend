@@ -1,16 +1,24 @@
 <template>
   <div class="min-h-screen bg-cover bg-center bg-no-repeat bg-fixed mobile-bg md:desktop-bg flex items-center justify-center p-4">
     <div class="max-w-md w-full">
-      <!-- Logo & Title -->
-      <div class="text-center mb-8">
-        <h1 class="text-4xl font-black text-white mb-2">
-          🏆 ایران تورنومنت
-        </h1>
-        <p class="text-white/80">تکمیل اطلاعات ثبت‌نام</p>
+      <!-- Loading State -->
+      <div v-if="!phoneNumber" class="text-center">
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+        <p class="text-white mt-4">در حال بارگذاری...</p>
       </div>
 
-      <!-- Register Card -->
-      <div class="bg-white rounded-3xl shadow-2xl p-8">
+      <!-- Main Content -->
+      <template v-else>
+        <!-- Logo & Title -->
+        <div class="text-center mb-8">
+          <h1 class="text-4xl font-black text-white mb-2">
+            🏆 ایران تورنومنت
+          </h1>
+          <p class="text-white/80">تکمیل اطلاعات ثبت‌نام</p>
+        </div>
+
+        <!-- Register Card -->
+        <div class="bg-white rounded-3xl shadow-2xl p-8">
         <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
           اطلاعات خود را تکمیل کنید
         </h2>
@@ -149,14 +157,15 @@
         </div>
       </div>
 
-      <!-- Terms -->
-      <p class="text-center text-white/60 text-sm mt-6">
-        با ثبت‌نام،
-        <NuxtLink to="/terms" class="underline hover:text-white">
-          قوانین و مقررات
-        </NuxtLink>
-        را می‌پذیرید
-      </p>
+        <!-- Terms -->
+        <p class="text-center text-white/60 text-sm mt-6">
+          با ثبت‌نام،
+          <NuxtLink to="/terms" class="underline hover:text-white">
+            قوانین و مقررات
+          </NuxtLink>
+          را می‌پذیرید
+        </p>
+      </template>
     </div>
   </div>
 </template>
