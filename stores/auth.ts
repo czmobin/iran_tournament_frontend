@@ -68,69 +68,126 @@ export const useAuthStore = defineStore('auth', {
         this.isInitializing = false
       }
     },
-    
-    // بقیه متدها همون...
-    async register(data: any) {
+
+    // OTP-based Authentication Methods
+    async sendOTP(phoneNumber: string) {
       try {
         this.isLoading = true
         const { apiFetch } = useApi()
-        
-        const response = await apiFetch('/auth/register/', {
+
+        console.log('[Auth Store] Sending OTP to:', phoneNumber)
+
+        const response = await apiFetch('/auth/send-otp/', {
           method: 'POST',
-          body: data
+          body: { phone_number: phoneNumber }
         })
-        
-        this.user = response.user
-        this.accessToken = response.tokens.access
-        this.refreshToken = response.tokens.refresh
-        
-        this.saveToStorage()
-        
-        return { success: true, message: response.message }
+
+        console.log('[Auth Store] OTP sent:', response)
+
+        return {
+          success: true,
+          message: response.message,
+          taskId: response.task_id,
+          userExists: response.user_exists
+        }
       } catch (error: any) {
+        console.error('[Auth Store] Send OTP failed:', error)
         return {
           success: false,
-          message: error.data?.message || 'خطا در ثبت‌نام',
-          errors: error.data
+          message: error.data?.message || error.data?.phone_number?.[0] || 'خطا در ارسال کد تایید'
         }
       } finally {
         this.isLoading = false
       }
     },
-    
-    async login(username: string, password: string) {
+
+    async verifyOTP(phoneNumber: string, otp: string) {
       try {
         this.isLoading = true
         const { apiFetch } = useApi()
 
-        console.log('[Auth Store] Attempting login for user:', username)
+        console.log('[Auth Store] Verifying OTP for:', phoneNumber)
 
-        const response = await apiFetch('/auth/login/', {
+        const response = await apiFetch('/auth/verify-otp/', {
           method: 'POST',
-          body: { username, password }
+          body: { phone_number: phoneNumber, otp }
         })
 
-        console.log('[Auth Store] Login response received:', {
-          hasUser: !!response.user,
-          hasTokens: !!response.tokens,
-          hasAccessToken: !!response.tokens?.access,
-          hasRefreshToken: !!response.tokens?.refresh
+        console.log('[Auth Store] OTP verification response:', response)
+
+        if (response.action === 'login') {
+          // کاربر موجود - لاگین کامل
+          this.user = response.user
+          this.accessToken = response.tokens.access
+          this.refreshToken = response.tokens.refresh
+          this.saveToStorage()
+
+          return {
+            success: true,
+            action: 'login',
+            message: 'ورود موفقیت‌آمیز بود'
+          }
+        } else if (response.action === 'register') {
+          // کاربر جدید - نیاز به تکمیل ثبت‌نام
+          return {
+            success: true,
+            action: 'register',
+            message: response.message,
+            phoneNumber: response.phone_number
+          }
+        }
+
+        return {
+          success: false,
+          message: 'پاسخ نامعتبر از سرور'
+        }
+      } catch (error: any) {
+        console.error('[Auth Store] Verify OTP failed:', error)
+        return {
+          success: false,
+          message: error.data?.message || error.data?.otp?.[0] || 'کد تایید نامعتبر است'
+        }
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    async completeRegistration(data: {
+      phone_number: string
+      username: string
+      first_name: string
+      last_name: string
+      email?: string
+      clash_royale_tag?: string
+    }) {
+      try {
+        this.isLoading = true
+        const { apiFetch } = useApi()
+
+        console.log('[Auth Store] Completing registration for:', data.phone_number)
+
+        const response = await apiFetch('/auth/complete-registration/', {
+          method: 'POST',
+          body: data
         })
+
+        console.log('[Auth Store] Registration completed:', response)
 
         this.user = response.user
         this.accessToken = response.tokens.access
         this.refreshToken = response.tokens.refresh
-
         this.saveToStorage()
 
-        console.log('[Auth Store] Tokens saved to store and localStorage')
-
-        return { success: true, message: response.message }
+        return {
+          success: true,
+          message: response.message || 'ثبت‌نام با موفقیت انجام شد'
+        }
       } catch (error: any) {
-        console.error('[Auth Store] Login failed:', error)
+        console.error('[Auth Store] Complete registration failed:', error)
         return {
           success: false,
-          message: error.data?.non_field_errors?.[0] || 'خطا در ورود'
+          message: error.data?.message || 'خطا در تکمیل ثبت‌نام',
+          errors: error.data
         }
       } finally {
         this.isLoading = false
